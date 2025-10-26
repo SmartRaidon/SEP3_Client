@@ -24,7 +24,7 @@
             
             
             // call REST endpoint here
-            var response = await Http.PostAsJsonAsync("https://localhost:5001/api/users", user); // change port according to business logic server
+            var response = await Http.PostAsJsonAsync("http://localhost:5284/api/Users", user); // change port according to business logic server
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("User created successfully!");
