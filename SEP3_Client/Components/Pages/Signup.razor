@@ -2,14 +2,16 @@
 @rendermode InteractiveServer
 @inject HttpClient Http
 
-<input @bind="_newUsername"/>
-<input @bind="_newPassword"/>
+<input @bind="_newUsername" placeholder="Username"/>
+<input @bind="_newPassword" placeholder="Password"/>
 <button @onclick="AddUser">Sign up</button>
+<div>Server response: <p>@_responseString</p></div>
 
 @code
 {
     string _newUsername = "";
     string _newPassword = "";
+    string _responseString = "";
 
     async Task AddUser()
     {
@@ -28,11 +30,22 @@
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("User created successfully!");
+                _responseString = "User created successfully!";
             }
             else
             {
                 Console.WriteLine("Error while creating user!");
+                _responseString = "Error while creating user!";
             }
+            
+            ClearFields();
         }
+    }
+
+    private void ClearFields()
+    {
+        // clear fields
+        _newUsername = String.Empty;
+        _newPassword = String.Empty;
     }
 }
