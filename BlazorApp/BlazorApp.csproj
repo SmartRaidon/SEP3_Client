@@ -7,4 +7,8 @@
         <RootNamespace>BlazorApp</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\ApiContracts\ApiContracts.csproj" />
+    </ItemGroup>
+
 </Project>

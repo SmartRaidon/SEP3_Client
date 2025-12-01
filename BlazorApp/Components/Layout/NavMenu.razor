@@ -1,6 +1,10 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using BlazorApp.Auth
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager Navigation
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">BlazorApp</a>
+        <a class="navbar-brand" href="">Tic-Tac-Toe Game</a>
     </div>
 </div>
 
@@ -13,5 +17,64 @@
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
+        
+        <AuthorizeView>
+            <Authorized>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="CreateMatch">
+                        <span>Create Match</span>
+                    </NavLink>
+                </div>
+                
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="JoinMatch">
+                        <span>Join Match</span>
+                    </NavLink>
+                </div>
+                
+                <div class="nav-item px-3">
+                    <button class="nav-link btn btn-link" @onclick="Logout">
+                        <span>Logout</span>
+                    </button>
+                </div>
+
+            </Authorized>
+            <NotAuthorized>
+                <!-- DUMMY LOGIN DELETE THIS LATER -->
+                <div class="nav-item px-3">
+                    <button class="nav-link btn btn-link" @onclick="DummyLogin">
+                        <span>DummyLogin</span>
+                    </button>
+                </div>
+                
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Login">
+                        <span>Login</span>
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Registration">
+                        <span>Register</span>
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+        
     </nav>
 </div>
+
+@code {
+    private async Task Logout()
+    {
+        await ((SimpleAuthProvider)AuthProvider).Logout();      // Clear session and notify Blazor
+        Navigation.NavigateTo("/");       // Redirect to home or login page
+    }
+
+    private async Task DummyLogin()
+    {
+        await ((SimpleAuthProvider)AuthProvider).DummyLogin(); // login with dummy data
+        Navigation.NavigateTo("/", true); // Redirect to home or login page 
+    }
+}

@@ -1,0 +1,85 @@
+﻿@page "/Registration"
+@using BlazorApp.Auth
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager NavMgr
+
+<AuthorizeView>
+    <Authorized>
+        <h3>ACCESS DENIED: You are already logged in!</h3>
+    </Authorized>
+    <NotAuthorized>
+        <h3>Please register!</h3>
+        <div>
+            <label>Username:</label>
+        </div>
+        <div>
+            <input type="text" @bind="_username"/>
+        </div>
+        <div>
+            <label>New password:</label>
+        </div>
+        <div>
+            <input type="password" @bind="_password1"/>
+        </div>
+        <div>
+            <label>Repeat password:</label>
+        </div>
+        <div>
+            <input type="password" @bind="_password2"/>
+        </div>
+        <div>
+            @if (!string.IsNullOrEmpty(_errorLabel))
+            {
+                <label style="color: red">
+                    @_errorLabel
+                </label>
+            }
+            @if (!string.IsNullOrEmpty(_successLabel))
+            {
+                <label style="color: green">
+                    @_successLabel
+                </label>
+            }
+        </div>
+        <div>
+            <button disabled="@_isDisabled" @onclick="RegisterAsync">Sign up!</button>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string _username = String.Empty;
+    private string _password1 = String.Empty;
+    private string _password2 = String.Empty;
+    private string _errorLabel = String.Empty;
+    private string _successLabel = String.Empty;
+    private bool _isDisabled = false;
+
+    private async Task RegisterAsync()
+    {
+        // Console.WriteLine("SignUp button clicked");
+        _errorLabel = "";
+        if (_password1.Equals(_password2))
+        {
+            try
+            {
+                _isDisabled = true;
+                _successLabel = "Successful registration! Redirecting to Login page...";
+                await Task.Delay(3000);
+                await ((SimpleAuthProvider)AuthProvider).Register(_username, _password1);
+                NavMgr.NavigateTo("/login");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                _errorLabel = $"Error: {e.Message}";
+            }
+        }
+        else
+        {
+            _errorLabel = "Passwords don't match! Try again";
+            _password1 = String.Empty;
+            _password2 = String.Empty;
+        }
+    }
+}
