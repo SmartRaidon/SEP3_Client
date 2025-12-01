@@ -1,9 +1,53 @@
 ﻿@page "/"
+@using BlazorApp.Auth
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager NavMgr
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Welcome</PageTitle>
 
-<h1>SEP3 proof of concept</h1>
+<div class="text-center">
+    <h1>Tic-Tac-Toe Game</h1>
+    <h3>SEP3 by Group3</h3>
+</div>
 
-<p>Please sign up here: (Username + password)</p>
+<AuthorizeView>
+    <Authorized>
+        <div class="d-flex justify-content-center align-items-center flex-wrap gap-xxl-5 mt-xxl-5">
+            <button class="btn glow-btn btn-lg flex-shrink-1" @onclick="GoToCreateMatch">
+                Create Match
+            </button>
+            <img src="https://joycat.com/cdn/shop/files/81Q8xf69rFL._AC_SX679.jpg"
+                 class="img-fluid flex-shrink-1"
+                 style="border: 5px solid #8B4513; border-radius: 50px; max-width: 800px;"
+                 alt="Tic-Tac-Toe rules">
 
-<Signup />
+            <button class="btn glow-btn btn-lg flex-shrink-1" @onclick="GoToJoinMatch">
+                Join Match
+            </button>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="d-flex justify-content-center align-items-center flex-wrap gap-xxl-5 mt-xxl-5">
+            <img src="https://joycat.com/cdn/shop/files/81Q8xf69rFL._AC_SX679.jpg"
+                 class="img-fluid flex-shrink-1"
+                 style="border: 5px solid #8B4513; border-radius: 50px; max-width: 800px;"
+                 alt="Tic-Tac-Toe rules">
+        </div>
+        <div class="d-flex justify-content-center align-items-center flex-wrap gap-xxl-5 mt-xxl-5">
+            <h1>Please log in to play!</h1>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+    void GoToCreateMatch()
+    {
+        NavMgr.NavigateTo("/create-match");
+    }
+
+    void GoToJoinMatch()
+    {
+        NavMgr.NavigateTo("/join-match");
+    }
+}

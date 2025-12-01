@@ -49,3 +49,23 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.glow-btn {
+    animation: glow 1.6s ease-in-out infinite alternate;
+    background-color: #e39a80;
+    font: bold 40px/1.5 "Source Code Pro", Menlo, Monaco, monospace;
+}
+
+.glow-btn:hover {
+    background-color: antiquewhite;   /* change to any color you like */
+    color: red;              /* optional: text color */
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 0 5px #733105, 0 0 10px #ffaa00;
+    }
+    to {
+        box-shadow: 0 0 15px #ff6404, 0 0 30px #ff8800;
+    }
+}

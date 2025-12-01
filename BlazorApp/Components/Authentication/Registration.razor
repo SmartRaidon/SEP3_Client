@@ -1,4 +1,4 @@
-﻿@page "/Registration"
+﻿@page "/registration"
 @using BlazorApp.Auth
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager NavMgr
@@ -13,19 +13,19 @@
             <label>Username:</label>
         </div>
         <div>
-            <input type="text" @bind="_username"/>
+            <input type="text" @bind="_username" placeholder="Username"/>
         </div>
         <div>
             <label>New password:</label>
         </div>
         <div>
-            <input type="password" @bind="_password1"/>
+            <input type="password" @bind="_password1" placeholder="Password"/>
         </div>
         <div>
             <label>Repeat password:</label>
         </div>
         <div>
-            <input type="password" @bind="_password2"/>
+            <input type="password" @bind="_password2" placeholder="Password again"/>
         </div>
         <div>
             @if (!string.IsNullOrEmpty(_errorLabel))

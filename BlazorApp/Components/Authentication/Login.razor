@@ -15,13 +15,13 @@
             <label>Username:</label>
         </div>
         <div>
-            <input type="text" @bind="username"/>
+            <input type="text" @bind="username" placeholder="Username"/>
         </div>    
         <div>
             <label>Password:</label>
         </div>
         <div>
-            <input type="password" @bind="password"/>
+            <input type="password" @bind="password" placeholder="Password"/>
         </div>
         <div>
             @if (!string.IsNullOrEmpty(errorLabel))
