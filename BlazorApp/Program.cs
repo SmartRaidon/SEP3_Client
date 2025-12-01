@@ -1,4 +1,4 @@
-using SEP3_Client.Components;
+using BlazorApp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 

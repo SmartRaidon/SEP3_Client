@@ -1,4 +1,4 @@
-﻿namespace SEP3_Client;
+﻿namespace BlazorApp;
 
 public class User
 {
