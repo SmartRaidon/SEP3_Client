@@ -1,0 +1,15 @@
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    <img width="600" src="https://upload.wikimedia.org/wikipedia/commons/8/81/Stop_sign.png"/>
+                    <p>You'll have to log in!</p>
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <!--  <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)"/> -->
+            <FocusOnNavigate RouteData="routeData" Selector="h1"/>
+        </Found>
+    </Router>
+</CascadingAuthenticationState>

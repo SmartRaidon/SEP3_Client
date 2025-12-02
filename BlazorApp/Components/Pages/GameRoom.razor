@@ -1,0 +1,82 @@
+﻿@page "/game-room"
+@using System.Linq
+@using ApiContracts
+@using BlazorApp.Services
+@inject IGameService SignalRService
+
+<div class="d-flex justify-content-center align-items-center">
+    <div class="text-center">
+        <h1>Player X</h1>
+    </div>
+    <div class="tictactoebox">
+        <div class="board" role="grid" aria-label="Tic Tac Toe board">
+            @for (int i = 0; i < 9; i++)
+            {
+                <button class="cell" role="gridcell" aria-label="Cell @i" @onclick="@(async () => await OnCellClick(i))" disabled="@(CellsDisabled[i])">
+                    <span class="mark">@Marks[i]</span>
+                </button>
+            }
+        </div>
+        <div class="controls">
+            <div class="status">@StatusMessage</div>
+        </div>
+    </div>
+    <div class="text-center">
+        <h1>Player O</h1>
+    </div>
+</div>
+
+
+@code {
+    private string[] Marks = new string[9];
+    private bool[] CellsDisabled = new bool[9];
+    private string StatusMessage = "Player X's turn";
+    private int GameId = 1;  // CHANGE ME! :)
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SignalRService.StartAsync();
+        await SignalRService.JoinGameAsync(GameId);
+
+        // Listen for the move updates
+        SignalRService.OnReceiveMoveAsync(UpdateBoard);
+        SignalRService.OnInvalidMoveAsync(ShowInvalidMoveMessage);
+    }
+
+    private async Task OnCellClick(int index)
+    {
+        // if (CellsDisabled[index]) return;  // Prevent clicking on already marked cells
+
+        var move = new MoveDto
+        {
+            GameId = GameId,
+            PlayerType = GetCurrentPlayer(),
+            CellIndex = index
+        };
+
+        // Send the move to the server
+        await SignalRService.SendMoveAsync(move);
+    }
+
+    private Task UpdateBoard(MoveDto move)
+    {
+        Marks[move.CellIndex] = move.PlayerType;
+        CellsDisabled[move.CellIndex] = true;
+        StatusMessage = $"Player {move.PlayerType}'s turn";
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task ShowInvalidMoveMessage(string message)
+    {
+        StatusMessage = message;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private string GetCurrentPlayer()
+    {
+        // Logic to determine current player (X or O)
+        return Marks.Count(m => m == "X") <= Marks.Count(m => m == "O") ? "X" : "O";
+    }
+}

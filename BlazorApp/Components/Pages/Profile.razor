@@ -1,0 +1,53 @@
+﻿@page "/profile"
+@using System.Security.Claims
+
+<h3>Profile</h3>
+
+<div class="d-flex mt-4">
+    <div>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png?20170328184010" 
+             alt="Profile picture placeholder"
+             class="img-fluid flex-shrink-1 mx-xxl-5"
+             style="border: 5px solid #8B4513; border-radius: 50px; max-width: 300px;">
+    </div>
+    <div class="flex-column">
+        <div>
+            <h3>Username</h3>
+            <input type="text" id="usernameInput" class="form-control mx-auto mt-1 text-center" style="width: 300px;" value="@username" readonly/>
+        </div>
+        <div>
+            <h3>E-mail</h3>
+            <input type="text" id="emailInput" class="form-control mx-auto mt-1 text-center" style="width: 300px;" value="@email" readonly/>
+        </div>
+        <div>
+            <h3>ID</h3>
+            <input type="text" id="idInput" class="form-control mx-auto mt-1 text-center" style="width: 300px;" value="@userid" readonly/>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private string? username;
+    private string? email;
+    private string? userid;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authenticationState = await State;
+        ClaimsPrincipal principal = authenticationState.User;
+        if (principal.Identity is null || !principal.Identity.IsAuthenticated)
+        {
+            // the user is not logged in
+            return;
+        }
+        username = principal.Identity.Name;
+        IEnumerable<Claim> claims = principal.Claims;
+        userid = claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+        Console.WriteLine("[ CREATE MATCH ] Generating invite code (PLACEHOLDER)");
+
+        email = "PLACEHOLDER@gmail.com";
+    }
+    
+}
