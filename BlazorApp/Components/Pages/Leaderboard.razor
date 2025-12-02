@@ -1,6 +1,56 @@
 ﻿@page "/leaderboard"
 <h3>Leaderboard</h3>
 
+@if (scores == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Rank #</th>
+            <th scope="col">Username</th>
+            <th scope="col">Score</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var (score, index) in scores.Select((value, i) => (value, i)))
+        {
+            <tr>
+                <td>@(index + 1)</td>
+                <td>@score.Username</td>
+                <td>@score.Point</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
 @code {
+    private LeaderboardScore[]? scores;
+
+    protected override void OnInitialized()
+    {
+        LoadDummyScores();
+    }
     
+    private void LoadDummyScores()
+    {
+        scores = new[]
+        {
+            new LeaderboardScore { Username = "Player1", Point = 1200 },
+            new LeaderboardScore { Username = "Player2", Point = 950 },
+            new LeaderboardScore { Username = "Player3", Point = 870 }
+        };
+    }
+
+    private class LeaderboardScore
+    {
+        public string Username;
+        public int Point;
+    }
 }

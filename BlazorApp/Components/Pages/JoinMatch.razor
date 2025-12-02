@@ -1,6 +1,62 @@
 ﻿@page "/join-match"
-<h3>JoinMatch</h3>
+@using System.Security.Claims
+
+<AuthorizeView>
+    <Authorized Context="authContext">
+        <div class="d-flex justify-content-center mt-4">
+            <div class="text-center">
+                <h3>Paste invite code here</h3>
+                <input type="text" id="inviteCode" class="form-control mx-auto mt-1 text-center" style="width: 300px;" @bind="InviteCode"/>
+                <div>
+                    @if (!string.IsNullOrEmpty(errorLabel))
+                    {
+                        <label style="color: red">
+                            @errorLabel
+                        </label>
+                    }
+                </div>
+                <button disabled="@_isDisabled" class="btn btn-outline-secondary mt-3" @onclick="JoinWithInviteCode">Join</button>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
 
 @code {
+    private string InviteCode = String.Empty;
+    private string errorLabel;
+    private bool _isDisabled = false;
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     
+    private async Task JoinWithInviteCode()
+    {
+        if (!string.IsNullOrWhiteSpace(InviteCode))
+        {
+            errorLabel = "Trying to join with invite code: ";
+            errorLabel += InviteCode;
+            _isDisabled = true;
+            Console.WriteLine("[ JOIN MATCH ] Join button pressed! SUCCESS (PLACEHOLDER)");
+        }
+        else
+        {
+            errorLabel = "Please paste a valid invite code and try again! :)";
+            Console.WriteLine("[ JOIN MATCH ] Join button pressed! FAIL (PLACEHOLDER)");
+        }
+
+        await InvokeAsync(StateHasChanged); // Ensure UI refresh
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authenticationState = await State;
+        ClaimsPrincipal principal = authenticationState.User;
+        if (principal.Identity is null || !principal.Identity.IsAuthenticated)
+        {
+            // the user is not logged in
+            return;
+        }
+        string? username = principal.Identity.Name;
+        IEnumerable<Claim> claims = principal.Claims;
+        string userIdAsString = claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+        Console.WriteLine("[ JOIN MATCH ] Waiting for invite code (PLACEHOLDER)");
+    }
 }
