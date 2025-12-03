@@ -77,7 +77,8 @@ public class SimpleAuthProvider : AuthenticationStateProvider
 
     public async Task Register(string username, string password)
     {
-        HttpResponseMessage response = await _httpClient.PostAsJsonAsync("Auth/register",
+        // CHANGE THE URI ACCORDING TO THE LOGIC SERVER'S USERSCONTROLLER!
+        HttpResponseMessage response = await _httpClient.PostAsJsonAsync("api/users",
             new CreateUserDto { Username = username, Password = password });
         string content = await response.Content.ReadAsStringAsync();
 
