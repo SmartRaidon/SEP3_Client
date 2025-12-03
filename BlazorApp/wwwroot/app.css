@@ -72,9 +72,9 @@ h1:focus {
 
 /* Game-room formatting*/
 .tictactoebox {
-    max-width: 720px;
-    width: 720px !important;
-    height: 720px !important;
+    max-width: 600px;
+    width: 600px !important;
+    height: 600px !important;
     margin: 0 auto;
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 }
