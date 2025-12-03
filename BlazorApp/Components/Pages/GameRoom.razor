@@ -54,6 +54,7 @@
             CellIndex = index
         };
 
+        Console.WriteLine("Cell clicked!");
         // Send the move to the server
         await SignalRService.SendMoveAsync(move);
     }
