@@ -4,30 +4,46 @@
 @using BlazorApp.Services
 @inject IGameService SignalRService
 
-<div class="d-flex justify-content-center align-items-center">
-    <div class="text-center">
-        <h1>Player X</h1>
+@if (!_connectedToServer)
+{
+    <div class="text-center mt-5">
+        <h3>@_connectionStatus</h3>
+        <button class="btn btn-primary mt-3" @onclick="Reconnect">
+            Try Again
+        </button>
     </div>
-    <div class="tictactoebox">
-        <div class="board" role="grid" aria-label="Tic Tac Toe board">
-            @for (int i = 0; i < 9; i++)
-            {
-                <button class="cell" role="gridcell" aria-label="Cell @i" @onclick="@(async () => await OnCellClick(i))" disabled="@(CellsDisabled[i])">
-                    <span class="mark">@Marks[i]</span>
-                </button>
-            }
+}
+else
+{
+    <!-- Your existing game UI -->
+    <div class="d-flex justify-content-center align-items-center">
+        <div class="text-center">
+            <h1>Player X</h1>
         </div>
-        <div class="controls">
-            <div class="status">@StatusMessage</div>
+        <div class="tictactoebox">
+            <div class="board" role="grid" aria-label="Tic Tac Toe board">
+                @for (int i = 0; i < 9; i++)
+                {
+                    <button class="cell" role="gridcell" aria-label="Cell @i" @onclick="@(async () => await OnCellClick(i))" disabled="@(CellsDisabled[i])">
+                        <span class="mark">@Marks[i]</span>
+                    </button>
+                }
+            </div>
+            <div class="controls">
+                <div class="status">@StatusMessage</div>
+            </div>
+        </div>
+        <div class="text-center">
+            <h1>Player O</h1>
         </div>
     </div>
-    <div class="text-center">
-        <h1>Player O</h1>
-    </div>
-</div>
+}
 
 
 @code {
+    private bool _connectedToServer = false;
+    private string _connectionStatus = "Connecting to logic server...";
+    
     private string[] Marks = new string[9];
     private bool[] CellsDisabled = new bool[9];
     private string StatusMessage = "Player X's turn";
@@ -35,12 +51,26 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await SignalRService.StartAsync();
-        await SignalRService.JoinGameAsync(GameId);
+        try
+        {
+            _connectionStatus = "Connecting to logic server...";
+            StateHasChanged();
 
-        // Listen for the move updates
-        SignalRService.OnReceiveMoveAsync(UpdateBoard);
-        SignalRService.OnInvalidMoveAsync(ShowInvalidMoveMessage);
+            await SignalRService.StartAsync();
+            await SignalRService.JoinGameAsync(GameId);
+
+            SignalRService.OnReceiveMoveAsync(UpdateBoard);
+            SignalRService.OnInvalidMoveAsync(ShowInvalidMoveMessage);
+
+            _connectedToServer = true;
+            _connectionStatus = "Connected!";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Could not connect to logic server: " + ex.Message);
+            _connectedToServer = false;
+            _connectionStatus = "Waiting for logic server...";
+        }
     }
 
     private async Task OnCellClick(int index)
@@ -79,5 +109,10 @@
     {
         // Logic to determine current player (X or O)
         return Marks.Count(m => m == "X") <= Marks.Count(m => m == "O") ? "X" : "O";
+    }
+    
+    private async Task Reconnect()
+    {
+        await OnInitializedAsync();
     }
 }
