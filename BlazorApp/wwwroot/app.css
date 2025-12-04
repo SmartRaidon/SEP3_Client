@@ -95,18 +95,34 @@ h1:focus {
     font-size: 4rem; 
     border-radius: 8px; 
     border: 2px solid #444; 
-    background: linear-gradient(180deg,#fff,#f3f3f3); 
-    cursor: pointer; 
+    background: white;
+    cursor: pointer;
+    outline: none;
 }
 
-.cell[disabled] { 
-    opacity: 0.7; 
+.cell:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.cell::-moz-focus-inner {
+    border: 0;
+}
+
+.cell[disabled] {
+    opacity: 0.5; 
     cursor: default; 
 }
 
 .mark { 
     user-select: none; 
-    pointer-events: none; 
+    pointer-events: none;
+    color: black;
+    background: none !important;
+}
+
+.mark:empty {
+    display: none;
 }
 
 .controls { 
@@ -126,4 +142,10 @@ h1:focus {
     border: 1px solid #444;
     background: #fff; 
     cursor: pointer; 
+}
+
+.winning-cell {
+    background-color: lightgreen;
+    color: darkgreen;
+    font-weight: bold;
 }

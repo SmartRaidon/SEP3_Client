@@ -6,8 +6,8 @@ public interface IGameService
 {
     Task StartAsync();
 
-    Task<GameDTO> CreateGameAsync(int playerId);
-    Task<GameDTO> JoinGameAsync(string inviteCode, int playerId);
+    Task<GameDTO> CreateGameAsync(int playerId, string playerName);
+    Task<GameDTO> JoinGameAsync(string inviteCode, int playerId, string playerName);
 
     Task SendMoveAsync(int gameId, int playerId, int position);
 

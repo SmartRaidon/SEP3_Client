@@ -22,16 +22,16 @@ public class SignalRGameService : IGameService
         return _hubConnection.StartAsync();
     }
 
-    public Task<GameDTO> CreateGameAsync(int playerId)
+    public Task<GameDTO> CreateGameAsync(int playerId, string playerName)
     {
-        Console.WriteLine($"[Client] CreateGameAsync({playerId})");
-        return _hubConnection.InvokeAsync<GameDTO>("CreateGame", playerId);
+        Console.WriteLine($"[Client] CreateGameAsync({playerId},  {playerName})");
+        return _hubConnection.InvokeAsync<GameDTO>("CreateGame", playerId, playerName);
     }
 
-    public Task<GameDTO> JoinGameAsync(string inviteCode, int playerId)
+    public Task<GameDTO> JoinGameAsync(string inviteCode, int playerId, string playerName)
     {
-        Console.WriteLine($"[Client] JoinGameAsync({inviteCode}, {playerId})");
-        return _hubConnection.InvokeAsync<GameDTO>("JoinGame", inviteCode, playerId);
+        Console.WriteLine($"[Client] JoinGameAsync({inviteCode}, {playerId}, {playerName})");
+        return _hubConnection.InvokeAsync<GameDTO>("JoinGame", inviteCode, playerId, playerName);
     }
 
     public Task SendMoveAsync(int gameId, int playerId, int position)
