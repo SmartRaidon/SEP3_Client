@@ -1,8 +1,14 @@
 ﻿@page "/game-room"
-@using System.Security.Claims
+@page "/game-room/{InviteCode}"
+
 @using System.Linq
+@using System.Security.Claims
+@using ApiContracts
 @using ApiContracts
 @using BlazorApp.Services
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+
 @inject IGameService SignalRService
 
 @if (!_connectedToServer)
@@ -46,6 +52,8 @@ else
 }
 
 @code {
+    
+    [Parameter] public string? InviteCode { get; set; }
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     private string? username;
     private string userIdAsString;
@@ -70,11 +78,12 @@ else
             // the user is not logged in
             return;
         }
+
         username = principal.Identity.Name;
         IEnumerable<Claim> claims = principal.Claims;
         userIdAsString = claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
         CurrentPlayerId = Convert.ToInt32(userIdAsString);
-        
+
         // biztos 9 elem
         Marks = Enumerable.Repeat(string.Empty, 9).ToArray();
         CellsDisabled = Enumerable.Repeat(false, 9).ToArray();
@@ -84,19 +93,39 @@ else
             _connectionStatus = "Connecting to logic server...";
             StateHasChanged();
 
-            Console.WriteLine("[GameRoom] Starting SignalR and creating game...");
-
+            Console.WriteLine("[GameRoom] Starting SignalR...");
             await SignalRService.StartAsync();
 
-            // HOST: új game létrehozása
-            GameDTO game = await SignalRService.CreateGameAsync(CurrentPlayerId);
+            GameDTO game;
+
+            if (!string.IsNullOrWhiteSpace(InviteCode))
+            {
+                // GUEST: meglévő game-hez csatlakozik invite kóddal
+                Console.WriteLine($"[GameRoom] Joining existing game with invite code {InviteCode}...");
+                game = await SignalRService.JoinGameAsync(InviteCode, CurrentPlayerId);
+            }
+            else
+            {
+                // HOST: új game létrehozása
+                Console.WriteLine("[GameRoom] Creating new game...");
+                game = await SignalRService.CreateGameAsync(CurrentPlayerId);
+            }
 
             GameId = game.Id;
             PlayerXId = game.PlayerXId;
             PlayerOId = game.PlayerOId;
 
-            StatusMessage = $"Invite code: {game.InviteCode}";
-            Console.WriteLine($"[GameRoom] Game created. Id={GameId}, Invite={game.InviteCode}");
+            if (game.Status == "WaitingForOpponent")
+            {
+                StatusMessage = $"Invite code: {game.InviteCode}";
+            }
+            else
+            {
+                StatusMessage = "Game in progress...";
+            }
+
+
+            Console.WriteLine($"[GameRoom] Game ready. Id={GameId}, Invite={game.InviteCode}");
 
             // Eventekre feliratkozás
             await SignalRService.OnMoveMade(UpdateBoard);

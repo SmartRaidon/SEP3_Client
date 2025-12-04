@@ -2,6 +2,8 @@
 @using System.Security.Claims
 @using BlazorApp.Services
 @inject IGameService SignalRService
+@inject NavigationManager Nav
+
 
 <AuthorizeView>
     <Authorized Context="authContext">
@@ -32,24 +34,25 @@
     
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     
-    private async Task JoinWithInviteCode()
+    private void JoinWithInviteCode()
     {
         if (!string.IsNullOrWhiteSpace(InviteCode))
         {
-            errorLabel = "Trying to join with invite code: ";
-            errorLabel += InviteCode;
+            errorLabel = $"Trying to join with invite code: {InviteCode}";
             _isDisabled = true;
-            await SignalRService.JoinGameAsync(InviteCode, Convert.ToInt32(userIdAsString));
-            Console.WriteLine("[ JOIN MATCH ] Join button pressed! SUCCESS (PLACEHOLDER)");
+
+            // Átmegyünk a GameRoomra guest módban
+            Nav.NavigateTo($"/game-room/{InviteCode}");
         }
         else
         {
             errorLabel = "Please paste a valid invite code and try again! :)";
             Console.WriteLine("[ JOIN MATCH ] Join button pressed! FAIL (PLACEHOLDER)");
         }
-
-        await InvokeAsync(StateHasChanged); // Ensure UI refresh
     }
+
+
+
     
     protected override async Task OnInitializedAsync()
     {
