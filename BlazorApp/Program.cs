@@ -18,6 +18,9 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https:/
 builder.Services.AddScoped<IUserService, HttpUserService>();
 builder.Services.AddScoped<IGameService, SignalRGameService>();
 builder.Services.AddScoped<AuthenticationStateProvider, SimpleAuthProvider>();
+builder.Services.AddScoped<IGameService, SignalRGameService>();
+
+
 
 
 var app = builder.Build();

@@ -1,5 +1,4 @@
 ﻿using ApiContracts;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace BlazorApp.Services;
@@ -8,56 +7,71 @@ public class SignalRGameService : IGameService
 {
     private readonly HubConnection _hubConnection;
 
-    public SignalRGameService(NavigationManager navigationManager)
+    public SignalRGameService()
     {
         _hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7174/gameHub")  // SignalR endpoint on the server
+            .WithUrl("https://localhost:7174/gamehub")   // LogicServer HTTPS + /gamehub
+            .WithAutomaticReconnect()
             .Build();
     }
 
-    public async Task StartAsync()
+    public Task StartAsync()
     {
-        await _hubConnection.StartAsync();
-        // await Task.CompletedTask; // FOR TESTING - REMOVE ME
+        Console.WriteLine("[Client] Starting SignalR connection...");
+        return _hubConnection.StartAsync();
     }
 
-    public async Task JoinGameAsync(int gameId)
+    public Task<GameDTO> CreateGameAsync(int playerId)
     {
-       await _hubConnection.SendAsync("JoinGameRoom", gameId);
-       // await Task.CompletedTask; // FOR TESTING - REMOVE ME
+        Console.WriteLine($"[Client] CreateGameAsync({playerId})");
+        return _hubConnection.InvokeAsync<GameDTO>("CreateGame", playerId);
     }
 
-    public async Task SendMoveAsync(MoveDto move)
+    public Task<GameDTO> JoinGameAsync(string inviteCode, int playerId)
     {
-        await _hubConnection.SendAsync("SendMoveAsync", move);
-        // await Task.CompletedTask; // FOR TESTING - REMOVE ME
+        Console.WriteLine($"[Client] JoinGameAsync({inviteCode}, {playerId})");
+        return _hubConnection.InvokeAsync<GameDTO>("JoinGame", inviteCode, playerId);
     }
 
-    public Task OnReceiveMoveAsync(Func<MoveDto, Task> callback)
+    public Task SendMoveAsync(int gameId, int playerId, int position)
     {
-        _hubConnection.On("ReceiveMove", callback);
-        return Task.CompletedTask;
-        // Simulate receiving a move (you can trigger the callback with a dummy MoveDTO)
-        /*
-        await callback(new MoveDto
+        Console.WriteLine($"[Client] SendMoveAsync(game={gameId}, player={playerId}, pos={position})");
+        return _hubConnection.SendAsync("MakeMove", gameId, playerId, position);
+    }
+
+    public Task OnGameUpdated(Func<GameDTO, Task> callback)
+    {
+        _hubConnection.On<GameDTO>("GameUpdated", game =>
         {
-            GameId = 1,
-            PlayerType = "X",
-            CellIndex = 0
-        });*/
-    }
-
-    public Task OnInvalidMoveAsync(Func<string, Task> callback)
-    {
-        _hubConnection.On("InvalidMove", callback);
+            Console.WriteLine("[Client] GameUpdated event received");
+            return callback(game);
+        });
         return Task.CompletedTask;
-        
-        // Simulate an invalid move response
-        // await callback("Invalid move! Try again.");
     }
 
-    public async Task StopAsync()
+    public Task OnMoveMade(Func<MoveDTO, Task> callback)
     {
-        await _hubConnection.StopAsync();
+        _hubConnection.On<MoveDTO>("MoveMade", move =>
+        {
+            Console.WriteLine("[Client] MoveMade event received");
+            return callback(move);
+        });
+        return Task.CompletedTask;
+    }
+
+    public Task OnGameFinished(Func<GameDTO, Task> callback)
+    {
+        _hubConnection.On<GameDTO>("GameFinished", game =>
+        {
+            Console.WriteLine("[Client] GameFinished event received");
+            return callback(game);
+        });
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync()
+    {
+        Console.WriteLine("[Client] Stopping SignalR connection...");
+        return _hubConnection.StopAsync();
     }
 }

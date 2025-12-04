@@ -4,10 +4,16 @@ namespace BlazorApp.Services;
 
 public interface IGameService
 {
-    public Task StartAsync();
-    public Task JoinGameAsync(int gameId);
-    public Task SendMoveAsync(MoveDto move);
-    public Task OnReceiveMoveAsync(Func<MoveDto, Task> callback);
-    public Task OnInvalidMoveAsync(Func<string, Task> callback);
-    public Task StopAsync();
+    Task StartAsync();
+
+    Task<GameDTO> CreateGameAsync(int playerId);
+    Task<GameDTO> JoinGameAsync(string inviteCode, int playerId);
+
+    Task SendMoveAsync(int gameId, int playerId, int position);
+
+    Task OnGameUpdated(Func<GameDTO, Task> callback);
+    Task OnMoveMade(Func<MoveDTO, Task> callback);
+    Task OnGameFinished(Func<GameDTO, Task> callback);
+
+    Task StopAsync();
 }

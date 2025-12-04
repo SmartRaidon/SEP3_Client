@@ -15,7 +15,6 @@
 }
 else
 {
-    <!-- Your existing game UI -->
     <div class="d-flex justify-content-center align-items-center">
         <div class="text-center">
             <h1>Player X</h1>
@@ -24,8 +23,14 @@ else
             <div class="board" role="grid" aria-label="Tic Tac Toe board">
                 @for (int i = 0; i < 9; i++)
                 {
-                    <button class="cell" role="gridcell" aria-label="Cell @i" @onclick="@(async () => await OnCellClick(i))" disabled="@(CellsDisabled[i])">
-                        <span class="mark">@Marks[i]</span>
+                    var index = i;   // <<< EZ A SOR A LÉNYEG
+
+                    <button class="cell"
+                            role="gridcell"
+                            aria-label="Cell @index"
+                            @onclick="@(async () => await OnCellClick(index))"
+                            disabled="@(CellsDisabled[index])">
+                        <span class="mark">@Marks[index]</span>
                     </button>
                 }
             </div>
@@ -39,80 +44,146 @@ else
     </div>
 }
 
-
 @code {
     private bool _connectedToServer = false;
     private string _connectionStatus = "Connecting to logic server...";
-    
-    private string[] Marks = new string[9];
-    private bool[] CellsDisabled = new bool[9];
-    private string StatusMessage = "Player X's turn";
-    private int GameId = 1;  // CHANGE ME! :)
+
+    private string[] Marks = Array.Empty<string>();
+    private bool[] CellsDisabled = Array.Empty<bool>();
+    private string StatusMessage = "Waiting for opponent...";
+
+    private int GameId;
+    private int CurrentPlayerId = 1;   // TODO: auth-ból
+    private int PlayerXId;
+    private int? PlayerOId;
 
     protected override async Task OnInitializedAsync()
     {
+        // biztos 9 elem
+        Marks = Enumerable.Repeat(string.Empty, 9).ToArray();
+        CellsDisabled = Enumerable.Repeat(false, 9).ToArray();
+
         try
         {
             _connectionStatus = "Connecting to logic server...";
             StateHasChanged();
 
-            await SignalRService.StartAsync();
-            await SignalRService.JoinGameAsync(GameId);
+            Console.WriteLine("[GameRoom] Starting SignalR and creating game...");
 
-            SignalRService.OnReceiveMoveAsync(UpdateBoard);
-            SignalRService.OnInvalidMoveAsync(ShowInvalidMoveMessage);
+            await SignalRService.StartAsync();
+
+            // HOST: új game létrehozása
+            GameDTO game = await SignalRService.CreateGameAsync(CurrentPlayerId);
+
+            GameId = game.Id;
+            PlayerXId = game.PlayerXId;
+            PlayerOId = game.PlayerOId;
+
+            StatusMessage = $"Invite code: {game.InviteCode}";
+            Console.WriteLine($"[GameRoom] Game created. Id={GameId}, Invite={game.InviteCode}");
+
+            // Eventekre feliratkozás
+            await SignalRService.OnMoveMade(UpdateBoard);
+            await SignalRService.OnGameUpdated(OnGameUpdated);
+            await SignalRService.OnGameFinished(OnGameFinished);
 
             _connectedToServer = true;
             _connectionStatus = "Connected!";
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Could not connect to logic server: " + ex.Message);
+            Console.WriteLine("[GameRoom] Could not connect to logic server: " + ex);
             _connectedToServer = false;
-            _connectionStatus = "Waiting for logic server...";
+            _connectionStatus = "Error: " + ex.Message;
         }
     }
 
     private async Task OnCellClick(int index)
     {
-        // if (CellsDisabled[index]) return;  // Prevent clicking on already marked cells
+        Console.WriteLine($"[GameRoom] OnCellClick({index}) called");
 
-        var move = new MoveDto
+        if (!_connectedToServer)
         {
-            GameId = GameId,
-            PlayerType = GetCurrentPlayer(),
-            CellIndex = index
-        };
+            Console.WriteLine("[GameRoom] Not connected, ignoring click");
+            return;
+        }
 
-        Console.WriteLine("Cell clicked!");
-        // Send the move to the server
-        await SignalRService.SendMoveAsync(move);
+        if (index < 0 || index >= Marks.Length)
+        {
+            Console.WriteLine("[GameRoom] Index out of bounds");
+            return;
+        }
+
+        if (CellsDisabled[index])
+        {
+            Console.WriteLine("[GameRoom] Cell already disabled");
+            return;
+        }
+
+        Console.WriteLine($"[GameRoom] Sending move: game={GameId}, player={CurrentPlayerId}, pos={index}");
+        await SignalRService.SendMoveAsync(GameId, CurrentPlayerId, index);
     }
 
-    private Task UpdateBoard(MoveDto move)
+    private Task UpdateBoard(MoveDTO move)
     {
-        Marks[move.CellIndex] = move.PlayerType;
-        CellsDisabled[move.CellIndex] = true;
-        StatusMessage = $"Player {move.PlayerType}'s turn";
+        Console.WriteLine($"[GameRoom] Move received: game={move.GameId}, player={move.PlayerId}, pos={move.Position}");
+
+        string mark = move.PlayerId == PlayerXId ? "X" : "O";
+
+        if (move.Position >= 0 && move.Position < Marks.Length)
+        {
+            Marks[move.Position] = mark;
+            CellsDisabled[move.Position] = true;
+        }
+
+        StatusMessage = $"Last move by {mark}";
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    private Task OnGameUpdated(GameDTO game)
+    {
+        Console.WriteLine("[GameRoom] GameUpdated received");
+        GameId = game.Id;
+        PlayerXId = game.PlayerXId;
+        PlayerOId = game.PlayerOId;
+
+        for (int i = 0; i < game.Board.Length && i < 9; i++)
+        {
+            int cell = game.Board[i];
+            Marks[i] = cell == 1 ? "X" : cell == 2 ? "O" : string.Empty;
+            CellsDisabled[i] = cell != 0;
+        }
+
         StateHasChanged();
         return Task.CompletedTask;
     }
 
-    private Task ShowInvalidMoveMessage(string message)
+    private Task OnGameFinished(GameDTO game)
     {
-        StatusMessage = message;
+        Console.WriteLine("[GameRoom] GameFinished received");
+
+        if (game.WinnerId.HasValue)
+        {
+            string winnerMark =
+                game.WinnerId == PlayerXId ? "X" :
+                (PlayerOId.HasValue && game.WinnerId == PlayerOId.Value ? "O" : "?");
+
+            StatusMessage = $"Game over. {winnerMark} wins!";
+        }
+        else
+        {
+            StatusMessage = "Game over. Draw!";
+        }
+
         StateHasChanged();
         return Task.CompletedTask;
     }
 
-    private string GetCurrentPlayer()
-    {
-        // Logic to determine current player (X or O)
-        return Marks.Count(m => m == "X") <= Marks.Count(m => m == "O") ? "X" : "O";
-    }
-    
     private async Task Reconnect()
     {
+        Console.WriteLine("[GameRoom] Reconnect requested");
         await OnInitializedAsync();
     }
 }
