@@ -10,7 +10,8 @@ public class SignalRGameService : IGameService
     public SignalRGameService()
     {
         _hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7174/gamehub")   // LogicServer HTTPS + /gamehub
+            //.WithUrl("https://localhost:7174/gamehub")   // LogicServer HTTPS + /gamehub
+            .WithUrl("https://10.170.162.122:7174/gamehub")
             .WithAutomaticReconnect()
             .Build();
     }

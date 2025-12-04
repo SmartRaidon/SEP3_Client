@@ -40,6 +40,28 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(principal)));
         Console.WriteLine("Logged in with dummy data, username: " + userDto.Username);
     }
+    
+    public async Task DummyLogin2()
+    {
+        UserDto userDto = new UserDto
+        {
+            Id = 998, 
+            Username = "tester2"
+        };
+        
+        string serialisedData = JsonSerializer.Serialize(userDto);
+        await _jsRuntime.InvokeVoidAsync("sessionStorage.setItem", "currentUser", serialisedData);
+        List<Claim> claims = new List<Claim>()
+        {
+            new Claim(ClaimTypes.Name, userDto.Username), 
+            new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString())
+        }; 
+        ClaimsIdentity identity = new ClaimsIdentity(claims, "apiauth"); 
+        ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+        
+        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(principal)));
+        Console.WriteLine("Logged in with dummy data, username: " + userDto.Username);
+    }
 
     public async Task Login(string username, string password)
     {

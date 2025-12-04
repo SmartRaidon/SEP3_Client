@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7174") });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7174")});
 builder.Services.AddScoped<IUserService, HttpUserService>();
 builder.Services.AddScoped<IGameService, SignalRGameService>();
 builder.Services.AddScoped<AuthenticationStateProvider, SimpleAuthProvider>();
