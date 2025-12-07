@@ -51,6 +51,23 @@ else
             <label>@PlayerOId</label>
         </div>
     </div>
+
+    if (GameEnded)
+    {
+        <div class="overlay">
+            <div class="end-card">
+                <h2>@EndMessage</h2>
+
+                <button class="btn btn-primary m-2" @onclick="RequestReplay">
+                    Replay
+                </button>
+
+                <button class="btn btn-secondary m-2" @onclick="GoToMenu">
+                    Main Menu
+                </button>
+            </div>
+        </div>
+    }
 }
 
 @code {
@@ -65,6 +82,7 @@ else
     private string[] Marks = Array.Empty<string>();
     private bool[] CellsDisabled = Array.Empty<bool>();
     private string StatusMessage = "Waiting for opponent...";
+    private string EndMessage = "";
 
     private int GameId;
     private int CurrentPlayerId = -1;   //
@@ -74,7 +92,13 @@ else
     private string playerOName;
     private int CurrentTurnPlayerId;
     private int[]? WinningCells;
+    private bool GameEnded = false;
 
+    private void GoToMenu()
+    {
+        Nav.NavigateTo("/");
+    }
+    
     protected override async Task OnInitializedAsync()
     {
         AuthenticationState authenticationState = await State;
@@ -102,6 +126,7 @@ else
             await SignalRService.OnMoveMade(UpdateBoard);
             await SignalRService.OnGameUpdated(OnGameUpdated);
             await SignalRService.OnGameFinished(OnGameFinished);
+            await SignalRService.OnReplayStarted(OnReplayStarted);
 
             Console.WriteLine("[GameRoom] Starting SignalR...");
             await SignalRService.StartAsync();
@@ -230,6 +255,9 @@ else
             // disable all cells
             for (int i = 0; i < CellsDisabled.Length; i++)
                 CellsDisabled[i] = true;
+
+            EndMessage = StatusMessage;
+            GameEnded = true;
         }
         else
         {
@@ -261,6 +289,9 @@ else
         // disable all cells
         for (int i = 0; i < CellsDisabled.Length; i++)
             CellsDisabled[i] = true;
+        
+        EndMessage = StatusMessage;
+        GameEnded = true;
 
         return InvokeAsync(StateHasChanged);
     }
@@ -272,5 +303,37 @@ else
             _connectionStatus = "Reconnecting...";
             await SignalRService.StartAsync();
         }
+    }
+    
+    private async Task RequestReplay()
+    {
+        Console.WriteLine("[GameRoom] Replay requested");
+
+        StatusMessage = "Replay requested. Waiting for opponent...";
+        EndMessage = StatusMessage;
+        GameEnded = false; // hide overlay while waiting - maybe maybe
+        await SignalRService.RequestReplayAsync(GameId, CurrentPlayerId);
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private Task OnReplayStarted(GameDTO game)
+    {
+        Console.WriteLine("[GameRoom] Replay started");
+
+        for (int i = 0; i < 9; i++)
+        {
+            Marks[i] = string.Empty;
+            CellsDisabled[i] = false;
+        }
+
+        WinningCells = null;
+        GameEnded = false;
+
+        CurrentTurnPlayerId = game.NextPlayerId;
+        StatusMessage = CurrentTurnPlayerId == CurrentPlayerId
+            ? "Your turn!"
+            : "Waiting for opponent...";
+
+        return InvokeAsync(StateHasChanged);
     }
 }
