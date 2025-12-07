@@ -75,4 +75,20 @@ public class SignalRGameService : IGameService
         Console.WriteLine("[Client] Stopping SignalR connection...");
         return _hubConnection.StopAsync();
     }
+
+    public Task RequestReplayAsync(int gameId, int playerId)
+    {
+        Console.WriteLine($"[Client] RequestReplayAsync(game={gameId}, player={playerId})");
+        return _hubConnection.SendAsync("RequestReplay", gameId, playerId);
+    }
+    
+    public Task OnReplayStarted(Func<GameDTO, Task> callback)
+    {
+        _hubConnection.On<GameDTO>("ReplayStarted", game =>
+        {
+            Console.WriteLine("[Client] ReplayStarted event received");
+            return callback(game);
+        });
+        return Task.CompletedTask;
+    }
 }

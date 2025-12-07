@@ -16,4 +16,6 @@ public interface IGameService
     Task OnGameFinished(Func<GameDTO, Task> callback);
 
     Task StopAsync();
+    Task RequestReplayAsync(int gameId, int playerId);
+    Task OnReplayStarted(Func<GameDTO, Task> callback);
 }
