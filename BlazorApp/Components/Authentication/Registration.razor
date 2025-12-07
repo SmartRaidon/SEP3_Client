@@ -28,6 +28,18 @@
             <input type="password" @bind="_password2" placeholder="Password again"/>
         </div>
         <div>
+            <label>E-mail:</label>
+        </div>
+        <div>
+            <input type="email" @bind="_email1" placeholder="example@gmail.com"/>
+        </div>
+        <div>
+            <label>Repeat e-mail:</label>
+        </div>
+        <div>
+            <input type="email" @bind="_email2" placeholder="example@gmail.com"/>
+        </div>
+        <div>
             @if (!string.IsNullOrEmpty(_errorLabel))
             {
                 <label style="color: red">
@@ -51,6 +63,8 @@
     private string _username = String.Empty;
     private string _password1 = String.Empty;
     private string _password2 = String.Empty;
+    private string _email1 = String.Empty;
+    private string _email2 = String.Empty;
     private string _errorLabel = String.Empty;
     private string _successLabel = String.Empty;
     private bool _isDisabled = false;
@@ -61,18 +75,29 @@
         _errorLabel = "";
         if (_password1.Equals(_password2))
         {
-            try
+            if (_email1.Equals(_email2))
             {
-                _isDisabled = true;
-                _successLabel = "Successful registration! Redirecting to Login page...";
-                await Task.Delay(3000);
-                await ((SimpleAuthProvider)AuthProvider).Register(_username, _password1);
-                NavMgr.NavigateTo("/login");
+                try
+                {
+                    _isDisabled = true;
+                    _successLabel = "Successful registration! Redirecting to Login page...";
+                    await Task.Delay(3000);
+                    await ((SimpleAuthProvider)AuthProvider).Register(_email1, _username, _password1);
+                    NavMgr.NavigateTo("/login");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    _errorLabel = $"Error: {e.Message}";
+                }
             }
-            catch (Exception e)
+            else
             {
-                Console.WriteLine(e);
-                _errorLabel = $"Error: {e.Message}";
+                _errorLabel = "E-mail addresses don't match! Try again";
+                _password1 = String.Empty;
+                _password2 = String.Empty;
+                _email1 = String.Empty;
+                _email2 = String.Empty;
             }
         }
         else

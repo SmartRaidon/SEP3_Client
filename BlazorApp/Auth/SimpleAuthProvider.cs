@@ -66,7 +66,7 @@ public class SimpleAuthProvider : AuthenticationStateProvider
     public async Task Login(string username, string password)
     {
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync("Auth/login",
-            new CreateUserDto { Username = username, Password = password });
+            new CreateUserDto {Email = "",  Username = username, Password = password });
         string content = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)
@@ -82,7 +82,6 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         {
             new Claim(ClaimTypes.Name, userDto.Username),
             new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString())
-            // here we can add e-mail as well
         };
         
         ClaimsIdentity identity = new ClaimsIdentity(claims, "apiauth");
@@ -97,11 +96,11 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new()))); 
     }
 
-    public async Task Register(string username, string password)
+    public async Task Register(string email, string username, string password)
     {
         // CHANGE THE URI ACCORDING TO THE LOGIC SERVER'S USERSCONTROLLER!
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync("api/users",
-            new CreateUserDto { Username = username, Password = password });
+            new CreateUserDto { Email = email, Username = username, Password = password });
         string content = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)
@@ -127,7 +126,7 @@ public class SimpleAuthProvider : AuthenticationStateProvider
             return new AuthenticationState(new());
         }
         
-        UserDto userDto = JsonSerializer.Deserialize<UserDto>(userAsJson);
+        UserDto? userDto = JsonSerializer.Deserialize<UserDto>(userAsJson);
         List<Claim> claims = new List<Claim>()
         {
             new Claim(ClaimTypes.Name, userDto.Username),
