@@ -63,10 +63,10 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         Console.WriteLine("Logged in with dummy data, username: " + userDto.Username);
     }
 
-    public async Task Login(string username, string password)
+    public async Task Login(string email, string password)
     {
-        HttpResponseMessage response = await _httpClient.PostAsJsonAsync("Auth/login",
-            new CreateUserDto {Email = "",  Username = username, Password = password });
+        HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/users/login",
+            new CreateUserDto {Email = email,  Username = "", Password = password });
         string content = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)
@@ -99,7 +99,7 @@ public class SimpleAuthProvider : AuthenticationStateProvider
     public async Task Register(string email, string username, string password)
     {
         // CHANGE THE URI ACCORDING TO THE LOGIC SERVER'S USERSCONTROLLER!
-        HttpResponseMessage response = await _httpClient.PostAsJsonAsync("api/users",
+        HttpResponseMessage response = await _httpClient.PostAsJsonAsync("api/users/register",
             new CreateUserDto { Email = email, Username = username, Password = password });
         string content = await response.Content.ReadAsStringAsync();
 

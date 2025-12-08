@@ -12,9 +12,9 @@ public class HttpUserService : IUserService
         _httpClient = httpClient;
     }
     
-    public async Task<UserDto> AddUserAsync(CreateUserDto request)
+    /*public async Task<UserDto> AddUserAsync(CreateUserDto request)
     {
-        HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync("users/register", request);
+        HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync("api/users/register", request);
         string response = await httpResponse.Content.ReadAsStringAsync();
         if (!httpResponse.IsSuccessStatusCode)
         {
@@ -24,7 +24,7 @@ public class HttpUserService : IUserService
         {
             PropertyNameCaseInsensitive = true
         })!;
-    }
+    }*/
 
     public async Task<UserDto> GetUserAsync(int id)
     {

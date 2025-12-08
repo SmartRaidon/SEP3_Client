@@ -12,10 +12,10 @@
             <h3>Please login</h3>
         </div>
         <div>
-            <label>Username:</label>
+            <label>Email:</label>
         </div>
         <div>
-            <input type="text" @bind="username" placeholder="Username"/>
+            <input type="text" @bind="email" placeholder="example@gmail.com"/>
         </div>    
         <div>
             <label>Password:</label>
@@ -39,7 +39,7 @@
 
 @code {
     
-    private string username;
+    private string email;
     private string password;
     private string errorLabel;
 
@@ -49,7 +49,7 @@
         errorLabel = "";
         try
         {
-            await ((SimpleAuthProvider)AuthProvider).Login(username, password);
+            await ((SimpleAuthProvider)AuthProvider).Login(email, password);
             NavMgr.NavigateTo("/");
         }
         catch (Exception e)
