@@ -131,7 +131,7 @@ else
             Console.WriteLine("[GameRoom] Starting SignalR...");
             await SignalRService.StartAsync();
             
-            GameDTO game;
+            GameDto game;
             
             if (!string.IsNullOrWhiteSpace(InviteCode))
             {
@@ -199,7 +199,7 @@ else
         await SignalRService.SendMoveAsync(GameId, CurrentPlayerId, index);
     }
 
-    private Task UpdateBoard(MoveDTO move)
+    private Task UpdateBoard(MoveDto move)
     {
         Console.WriteLine($"[GameRoom] Move received: game={move.GameId}, player={move.PlayerId}, pos={move.Position}");
 
@@ -217,7 +217,7 @@ else
         return InvokeAsync(StateHasChanged);
     }
 
-    private Task OnGameUpdated(GameDTO game)
+    private Task OnGameUpdated(GameDto game)
     {
         Console.WriteLine("[GameRoom] GameUpdated received");
         GameId = game.Id;
@@ -270,7 +270,7 @@ else
     }
 
 
-    private Task OnGameFinished(GameDTO game)
+    private Task OnGameFinished(GameDto game)
     {
         if (game.WinnerId.HasValue)
         {
@@ -316,7 +316,7 @@ else
         await InvokeAsync(StateHasChanged);
     }
     
-    private Task OnReplayStarted(GameDTO game)
+    private Task OnReplayStarted(GameDto game)
     {
         Console.WriteLine("[GameRoom] Replay started");
 

@@ -22,16 +22,16 @@ public class SignalRGameService : IGameService
         return _hubConnection.StartAsync();
     }
 
-    public Task<GameDTO> CreateGameAsync(int playerId, string playerName)
+    public Task<GameDto> CreateGameAsync(int playerId, string playerName)
     {
         Console.WriteLine($"[Client] CreateGameAsync({playerId},  {playerName})");
-        return _hubConnection.InvokeAsync<GameDTO>("CreateGame", playerId, playerName);
+        return _hubConnection.InvokeAsync<GameDto>("CreateGame", playerId, playerName);
     }
 
-    public Task<GameDTO> JoinGameAsync(string inviteCode, int playerId, string playerName)
+    public Task<GameDto> JoinGameAsync(string inviteCode, int playerId, string playerName)
     {
         Console.WriteLine($"[Client] JoinGameAsync({inviteCode}, {playerId}, {playerName})");
-        return _hubConnection.InvokeAsync<GameDTO>("JoinGame", inviteCode, playerId, playerName);
+        return _hubConnection.InvokeAsync<GameDto>("JoinGame", inviteCode, playerId, playerName);
     }
 
     public Task SendMoveAsync(int gameId, int playerId, int position)
@@ -40,9 +40,9 @@ public class SignalRGameService : IGameService
         return _hubConnection.SendAsync("MakeMove", gameId, playerId, position);
     }
 
-    public Task OnGameUpdated(Func<GameDTO, Task> callback)
+    public Task OnGameUpdated(Func<GameDto, Task> callback)
     {
-        _hubConnection.On<GameDTO>("GameUpdated", game =>
+        _hubConnection.On<GameDto>("GameUpdated", game =>
         {
             Console.WriteLine("[Client] GameUpdated event received");
             return callback(game);
@@ -50,9 +50,9 @@ public class SignalRGameService : IGameService
         return Task.CompletedTask;
     }
 
-    public Task OnMoveMade(Func<MoveDTO, Task> callback)
+    public Task OnMoveMade(Func<MoveDto, Task> callback)
     {
-        _hubConnection.On<MoveDTO>("MoveMade", move =>
+        _hubConnection.On<MoveDto>("MoveMade", move =>
         {
             Console.WriteLine("[Client] MoveMade event received");
             return callback(move);
@@ -60,9 +60,9 @@ public class SignalRGameService : IGameService
         return Task.CompletedTask;
     }
 
-    public Task OnGameFinished(Func<GameDTO, Task> callback)
+    public Task OnGameFinished(Func<GameDto, Task> callback)
     {
-        _hubConnection.On<GameDTO>("GameFinished", game =>
+        _hubConnection.On<GameDto>("GameFinished", game =>
         {
             Console.WriteLine("[Client] GameFinished event received");
             return callback(game);
@@ -82,9 +82,9 @@ public class SignalRGameService : IGameService
         return _hubConnection.SendAsync("RequestReplay", gameId, playerId);
     }
     
-    public Task OnReplayStarted(Func<GameDTO, Task> callback)
+    public Task OnReplayStarted(Func<GameDto, Task> callback)
     {
-        _hubConnection.On<GameDTO>("ReplayStarted", game =>
+        _hubConnection.On<GameDto>("ReplayStarted", game =>
         {
             Console.WriteLine("[Client] ReplayStarted event received");
             return callback(game);

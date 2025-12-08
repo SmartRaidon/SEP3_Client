@@ -18,55 +18,11 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         _httpClient = httpClient;
         _jsRuntime = jsRuntime;
     }
-
-    public async Task DummyLogin()
-    {
-        UserDto userDto = new UserDto
-        {
-            Id = 999, 
-            Username = "tester"
-        };
-        
-        string serialisedData = JsonSerializer.Serialize(userDto);
-        await _jsRuntime.InvokeVoidAsync("sessionStorage.setItem", "currentUser", serialisedData);
-        List<Claim> claims = new List<Claim>()
-        {
-            new Claim(ClaimTypes.Name, userDto.Username), 
-            new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString())
-        }; 
-        ClaimsIdentity identity = new ClaimsIdentity(claims, "apiauth"); 
-        ClaimsPrincipal principal = new ClaimsPrincipal(identity);
-        
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(principal)));
-        Console.WriteLine("Logged in with dummy data, username: " + userDto.Username);
-    }
     
-    public async Task DummyLogin2()
-    {
-        UserDto userDto = new UserDto
-        {
-            Id = 998, 
-            Username = "tester2"
-        };
-        
-        string serialisedData = JsonSerializer.Serialize(userDto);
-        await _jsRuntime.InvokeVoidAsync("sessionStorage.setItem", "currentUser", serialisedData);
-        List<Claim> claims = new List<Claim>()
-        {
-            new Claim(ClaimTypes.Name, userDto.Username), 
-            new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString())
-        }; 
-        ClaimsIdentity identity = new ClaimsIdentity(claims, "apiauth"); 
-        ClaimsPrincipal principal = new ClaimsPrincipal(identity);
-        
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(principal)));
-        Console.WriteLine("Logged in with dummy data, username: " + userDto.Username);
-    }
-
     public async Task Login(string email, string password)
     {
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/users/login",
-            new CreateUserDto {Email = email,  Username = "", Password = password });
+            new LoginDto() { Email = email, Password = password });
         string content = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)

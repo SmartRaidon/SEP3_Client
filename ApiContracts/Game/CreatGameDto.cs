@@ -1,7 +1,6 @@
 ﻿namespace ApiContracts;
 
-public class JoinGameDTO
+public class CreatGameDto
 {
-    public required string InviteCode { get; set; }
     public required int PlayerId { get; set; }
 }
