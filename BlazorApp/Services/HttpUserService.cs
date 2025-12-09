@@ -12,20 +12,6 @@ public class HttpUserService : IUserService
         _httpClient = httpClient;
     }
     
-    /*public async Task<UserDto> AddUserAsync(CreateUserDto request)
-    {
-        HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync("api/users/register", request);
-        string response = await httpResponse.Content.ReadAsStringAsync();
-        if (!httpResponse.IsSuccessStatusCode)
-        {
-            throw new Exception(response);
-        }
-        return JsonSerializer.Deserialize<UserDto>(response, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        })!;
-    }*/
-
     public async Task<UserDto> GetUserAsync(int id)
     {
         HttpResponseMessage httpResponse = await _httpClient.GetAsync($"/api/users/{id}");
@@ -54,7 +40,31 @@ public class HttpUserService : IUserService
             PropertyNameCaseInsensitive = true
         })!;
     }
+    
+    public async Task<List<UserDto>> GetTop10UsersAsync()
+    {
+        HttpResponseMessage httpResponse = await _httpClient.GetAsync("api/users/top10");
+        string response = httpResponse.Content.ReadAsStringAsync().Result;
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            throw new Exception(response);
+        }
+        
+        var _list = new List<UserDto>();
+        _list = JsonSerializer.Deserialize<List<UserDto>>(response, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        })!;
+        
+        Console.WriteLine("Received 10 users: " + _list.Count);
+        foreach (var item in _list)
+        {
+            Console.WriteLine(item);
+        }
 
+        return _list;
+    }
+    
     public async Task UpdateUserAsync(int id, UserDto request)
     {
         HttpResponseMessage httpResponse = await _httpClient.PutAsJsonAsync($"api/users/{id}", request);

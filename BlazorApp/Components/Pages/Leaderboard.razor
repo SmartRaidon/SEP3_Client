@@ -1,11 +1,15 @@
 ﻿@page "/leaderboard"
 @using System.Security.Claims
+@using ApiContracts
+@using BlazorApp.Services
+
+@inject IUserService UserService
 
 <AuthorizeView>
     <Authorized>
         <h3>Leaderboard</h3>
 
-        @if (scores == null)
+        @if (_list == null)
         {
             <p>
                 <em>Loading...</em>
@@ -22,12 +26,12 @@
                 </tr>
                 </thead>
                 <tbody>
-                @foreach (var (score, index) in scores.Select((value, i) => (value, i)))
+                @foreach (var (user, index) in _list.Select((value, i) => (value, i)))
                 {
                     <tr>
                         <td>@(index + 1)</td>
-                        <td>@score.Username</td>
-                        <td>@score.Point</td>
+                        <td>@user.Username</td>
+                        <td>@user.Points</td>
                     </tr>
                 }
                 </tbody>
@@ -42,12 +46,10 @@
 @code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     
-    private LeaderboardScore[]? scores;
+    private List<UserDto>? _list;
 
-    protected override async void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        LoadDummyScores();
-        
         AuthenticationState authenticationState = await State;
         ClaimsPrincipal principal = authenticationState.User;
         if (principal.Identity is null || !principal.Identity.IsAuthenticated)
@@ -60,21 +62,7 @@
         IEnumerable<Claim> claims = principal.Claims;
         string userIdAsString = claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
         int userId = int.Parse(userIdAsString);
-    }
-    
-    private void LoadDummyScores()
-    {
-        scores = new[]
-        {
-            new LeaderboardScore { Username = "Player1", Point = 1200 },
-            new LeaderboardScore { Username = "Player2", Point = 950 },
-            new LeaderboardScore { Username = "Player3", Point = 870 }
-        };
-    }
 
-    private class LeaderboardScore
-    {
-        public string Username;
-        public int Point;
+        _list = await UserService.GetTop10UsersAsync();
     }
 }
