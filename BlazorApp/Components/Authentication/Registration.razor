@@ -68,43 +68,80 @@
     private string _errorLabel = String.Empty;
     private string _successLabel = String.Empty;
     private bool _isDisabled = false;
+    
+    bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        return System.Text.RegularExpressions.Regex
+            .IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+    }
+    
+    bool IsValidPassword(string password)
+    {
+        return password.Length >= 8;
+    }
+
+    bool IsValidUsername(string username)
+    {
+        return username.Length >= 5;
+    }
 
     private async Task RegisterAsync()
     {
         // Console.WriteLine("SignUp button clicked");
         _errorLabel = "";
-        if (_password1.Equals(_password2))
+        
+        if (!IsValidPassword(_password1))
         {
-            if (_email1.Equals(_email2))
-            {
-                try
-                {
-                    _isDisabled = true;
-                    _successLabel = "Successful registration! Redirecting to Login page...";
-                    await Task.Delay(3000);
-                    await ((SimpleAuthProvider)AuthProvider).Register(_email1, _username, _password1);
-                    NavMgr.NavigateTo("/login");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    _errorLabel = $"Error: {e.Message}";
-                }
-            }
-            else
-            {
-                _errorLabel = "E-mail addresses don't match! Try again";
-                _password1 = String.Empty;
-                _password2 = String.Empty;
-                _email1 = String.Empty;
-                _email2 = String.Empty;
-            }
+            _errorLabel = "Password must be at least 8 characters long!";
+            return;
         }
-        else
+
+        if (!IsValidEmail(_email1) || !IsValidEmail(_email2))
         {
-            _errorLabel = "Passwords don't match! Try again";
-            _password1 = String.Empty;
-            _password2 = String.Empty;
+            _errorLabel = "Invalid email format!";
+            return;
+        }
+        
+        if (!IsValidUsername(_username))
+        {
+            _errorLabel = "Username must be at least 5 characters long!";
+            return;
+        }
+        
+        if (!_password1.Equals(_password2))
+        {
+            _errorLabel = "Passwords don't match! Try again.";
+            _password1 = "";
+            _password2 = "";
+            return;
+        }
+
+        if (!_email1.Equals(_email2))
+        {
+            _errorLabel = "E-mail addresses don't match! Try again.";
+            _email1 = "";
+            _email2 = "";
+            return;
+        }
+        
+        try
+        {
+            _isDisabled = true;
+            _successLabel = "Successful registration! Redirecting to Login page...";
+            await Task.Delay(3000);
+
+            await ((SimpleAuthProvider)AuthProvider).Register(_email1, _username, _password1);
+
+            NavMgr.NavigateTo("/login");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            _errorLabel = $"Error: {e.Message}";
+            _isDisabled = false;
         }
     }
 }
