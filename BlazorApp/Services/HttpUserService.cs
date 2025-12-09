@@ -49,20 +49,11 @@ public class HttpUserService : IUserService
         {
             throw new Exception(response);
         }
-        
-        var _list = new List<UserDto>();
-        _list = JsonSerializer.Deserialize<List<UserDto>>(response, new JsonSerializerOptions
+
+        return JsonSerializer.Deserialize<List<UserDto>>(response, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         })!;
-        
-        Console.WriteLine("Received 10 users: " + _list.Count);
-        foreach (var item in _list)
-        {
-            Console.WriteLine(item);
-        }
-
-        return _list;
     }
     
     public async Task UpdateUserAsync(int id, UserDto request)
