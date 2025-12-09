@@ -28,7 +28,7 @@ public class HttpUserService : IUserService
 
     public async Task<UserDto> GetUserAsync(int id)
     {
-        HttpResponseMessage httpResponse = await _httpClient.GetAsync($"users/{id}");
+        HttpResponseMessage httpResponse = await _httpClient.GetAsync($"/api/users/{id}");
         string response = httpResponse.Content.ReadAsStringAsync().Result;
         if (!httpResponse.IsSuccessStatusCode)
         {
@@ -42,7 +42,7 @@ public class HttpUserService : IUserService
 
     public async Task<List<UserDto>> GetUsersAsync()
     {
-        HttpResponseMessage httpResponse = await _httpClient.GetAsync("users");
+        HttpResponseMessage httpResponse = await _httpClient.GetAsync("api/users");
         string response = httpResponse.Content.ReadAsStringAsync().Result;
         if (!httpResponse.IsSuccessStatusCode)
         {
@@ -57,7 +57,7 @@ public class HttpUserService : IUserService
 
     public async Task UpdateUserAsync(int id, UserDto request)
     {
-        HttpResponseMessage httpResponse = await _httpClient.PutAsJsonAsync($"users/{id}", request);
+        HttpResponseMessage httpResponse = await _httpClient.PutAsJsonAsync($"api/users/{id}", request);
         string response = await httpResponse.Content.ReadAsStringAsync();
         if (!httpResponse.IsSuccessStatusCode)
         {
@@ -67,11 +67,43 @@ public class HttpUserService : IUserService
 
     public async Task DeleteUserAsync(int id)
     {
-        HttpResponseMessage httpResponse = await _httpClient.DeleteAsync($"users/{id}");
+        HttpResponseMessage httpResponse = await _httpClient.DeleteAsync($"api/users/{id}");
         string response = await httpResponse.Content.ReadAsStringAsync();
         if (!httpResponse.IsSuccessStatusCode)
         {
             throw new Exception(response);
         }
+    }
+    
+    public async Task ChangePasswordAsync(int id, string newPassword)
+    {
+        var dto = new ChangePasswordDto
+        {
+            NewPassword = newPassword
+        };
+
+        HttpResponseMessage httpResponse = 
+            await _httpClient.PutAsJsonAsync($"/api/users/{id}/password", dto);
+
+        string response = await httpResponse.Content.ReadAsStringAsync();
+
+        if (!httpResponse.IsSuccessStatusCode)
+            throw new Exception(response);
+    }
+
+    public async Task ChangeUsernameAsync(int id, string newUsername)
+    {
+        var dto = new ChangeUsernameDto
+        {
+            NewUsername = newUsername
+        };
+
+        HttpResponseMessage httpResponse = 
+            await _httpClient.PutAsJsonAsync($"/api/users/{id}/username", dto);
+
+        string response = await httpResponse.Content.ReadAsStringAsync();
+
+        if (!httpResponse.IsSuccessStatusCode)
+            throw new Exception(response);
     }
 }

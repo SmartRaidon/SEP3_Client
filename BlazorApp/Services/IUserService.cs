@@ -9,4 +9,6 @@ public interface IUserService
     public Task<List<UserDto>> GetUsersAsync();
     public Task UpdateUserAsync(int id, UserDto request);
     public Task DeleteUserAsync(int id);
+    public Task ChangePasswordAsync(int id, string newPassword);
+    public Task ChangeUsernameAsync(int id, string newUsername);
 }

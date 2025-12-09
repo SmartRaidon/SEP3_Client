@@ -9,66 +9,77 @@
 @inject NavigationManager Nav
 @inject IGameService SignalRService
 
-@if (!_connectedToServer)
-{
-    <div class="text-center mt-5">
-        <h3>@_connectionStatus</h3>
-        <button class="btn btn-primary mt-3" @onclick="Reconnect">
-            Try Again
-        </button>
-    </div>
-}
-else
-{
-    <div class="d-flex justify-content-center align-items-center">
-        <div class="text-center">
-            <h1>Player X</h1>
-            <label>@playerXName</label>
-            <label>@PlayerXId</label>
-        </div>
-        <div class="tictactoebox">
-            <div class="board" role="grid" aria-label="Tic Tac Toe board">
-                @for (int i = 0; i < 9; i++)
-                {
-                    var index = i;   // <<< EZ A SOR A LÉNYEG
+<AuthorizeView>
+    <Authorized>
 
-                    <button class="cell @(WinningCells?.Contains(index) == true ? "winning-cell" : "")"
-                            role="gridcell"
-                            aria-label="Cell @index"
-                            @onclick="@(async () => await OnCellClick(index))"
-                            disabled="@(CellsDisabled[index])">
-                        <span class="mark">@Marks[index]</span>
-                    </button>
-                }
-            </div>
-            <div class="controls">
-                <div class="status">@StatusMessage</div>
-            </div>
-        </div>
-        <div class="text-center">
-            <h1>Player O</h1>
-            <label>@playerOName</label>
-            <label>@PlayerOId</label>
-        </div>
-    </div>
-
-    if (GameEnded)
-    {
-        <div class="overlay">
-            <div class="end-card">
-                <h2>@EndMessage</h2>
-
-                <button class="btn btn-primary m-2" @onclick="RequestReplay">
-                    Replay
-                </button>
-
-                <button class="btn btn-secondary m-2" @onclick="GoToMenu">
-                    Main Menu
+        @if (!_connectedToServer)
+        {
+            <div class="text-center mt-5">
+                <h3>@_connectionStatus</h3>
+                <button class="btn btn-primary mt-3" @onclick="Reconnect">
+                    Try Again
                 </button>
             </div>
-        </div>
-    }
-}
+        }
+        else
+        {
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="text-center">
+                    <h1>Player X</h1>
+                    <label>@playerXName</label>
+                    <label>@PlayerXId</label>
+                </div>
+                <div class="tictactoebox">
+                    <div class="board" role="grid" aria-label="Tic Tac Toe board">
+                        @for (int i = 0; i < 9; i++)
+                        {
+                            var index = i;   // <<< EZ A SOR A LÉNYEG
+
+                            <button class="cell @(WinningCells?.Contains(index) == true ? "winning-cell" : "")"
+                                    role="gridcell"
+                                    aria-label="Cell @index"
+                                    @onclick="@(async () => await OnCellClick(index))"
+                                    disabled="@(CellsDisabled[index])">
+                                <span class="mark">@Marks[index]</span>
+                            </button>
+                        }
+                    </div>
+                    <div class="controls">
+                        <div class="status">@StatusMessage</div>
+                        <div class="timer" style="color:@TimerColor;">
+                            Time left: @TimerDisplay
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <h1>Player O</h1>
+                    <label>@playerOName</label>
+                    <label>@PlayerOId</label>
+                </div>
+            </div>
+
+            if (GameEnded)
+            {
+                <div class="overlay">
+                    <div class="end-card">
+                        <h2>@EndMessage</h2>
+
+                        <button class="btn btn-primary m-2" @onclick="RequestReplay">
+                            Replay
+                        </button>
+
+                        <button class="btn btn-secondary m-2" @onclick="GoToMenu">
+                            Main Menu
+                        </button>
+                    </div>
+                </div>
+            }
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>ACCESS DENIED: You are not logged in.</p>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     
@@ -93,6 +104,11 @@ else
     private int CurrentTurnPlayerId;
     private int[]? WinningCells;
     private bool GameEnded = false;
+    
+    private System.Timers.Timer? _moveTimer;
+    private int _secondsLeft = 59; // 59 seconds countdown
+    private string TimerDisplay => $"{_secondsLeft / 60:D1}:{_secondsLeft % 60:D2}";
+    private string TimerColor => _secondsLeft < 10 ? "red" : "black";
 
     private void GoToMenu()
     {
@@ -265,6 +281,15 @@ else
                 ? "Your turn!"
                 : "Waiting for opponent...";
         }
+        
+        // we start the timer
+        if (!GameEnded)
+        {
+            if (CurrentTurnPlayerId == CurrentPlayerId)
+                StartTurnTimer();
+            else
+                StopTurnTimer();
+        }
 
         return InvokeAsync(StateHasChanged);
     }
@@ -335,5 +360,41 @@ else
             : "Waiting for opponent...";
 
         return InvokeAsync(StateHasChanged);
+    }
+    
+    private void StartTurnTimer()
+    {
+        StopTurnTimer(); // ensure no timer is running
+
+        _secondsLeft = 59; // reset to 59 seconds
+        _moveTimer = new System.Timers.Timer(1000); // 1 second interval
+        _moveTimer.Elapsed += OnTimerElapsed;
+        _moveTimer.AutoReset = true;
+        _moveTimer.Start();
+    }
+
+    private void StopTurnTimer()
+    {
+        if (_moveTimer != null)
+        {
+            _moveTimer.Stop();
+            _moveTimer.Elapsed -= OnTimerElapsed;
+            _moveTimer.Dispose();
+            _moveTimer = null;
+        }
+    }
+
+    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        if (_secondsLeft > 0)
+        {
+            _secondsLeft--;
+            InvokeAsync(StateHasChanged); // update UI
+        }
+        else
+        {
+            StopTurnTimer();
+            Console.WriteLine("[GameRoom] Timer expired!");
+        }
     }
 }

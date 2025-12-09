@@ -1,41 +1,65 @@
 ﻿@page "/leaderboard"
-<h3>Leaderboard</h3>
+@using System.Security.Claims
 
-@if (scores == null)
-{
-    <p>
-        <em>Loading...</em>
-    </p>
-}
-else
-{
-    <table class="table">
-        <thead>
-        <tr>
-            <th scope="col">Rank #</th>
-            <th scope="col">Username</th>
-            <th scope="col">Score</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var (score, index) in scores.Select((value, i) => (value, i)))
+<AuthorizeView>
+    <Authorized>
+        <h3>Leaderboard</h3>
+
+        @if (scores == null)
         {
-            <tr>
-                <td>@(index + 1)</td>
-                <td>@score.Username</td>
-                <td>@score.Point</td>
-            </tr>
+            <p>
+                <em>Loading...</em>
+            </p>
         }
-        </tbody>
-    </table>
-}
+        else
+        {
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Rank #</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Score</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var (score, index) in scores.Select((value, i) => (value, i)))
+                {
+                    <tr>
+                        <td>@(index + 1)</td>
+                        <td>@score.Username</td>
+                        <td>@score.Point</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>ACCESS DENIED: You are not logged in.</p>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    
     private LeaderboardScore[]? scores;
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
         LoadDummyScores();
+        
+        AuthenticationState authenticationState = await State;
+        ClaimsPrincipal principal = authenticationState.User;
+        if (principal.Identity is null || !principal.Identity.IsAuthenticated)
+        {
+            // the user is not logged in
+            return;
+        }
+
+        string? username = principal.Identity.Name;
+        IEnumerable<Claim> claims = principal.Claims;
+        string userIdAsString = claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+        int userId = int.Parse(userIdAsString);
     }
     
     private void LoadDummyScores()

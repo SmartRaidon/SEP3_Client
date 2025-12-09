@@ -23,6 +23,9 @@
             </div>
         </div>
     </Authorized>
+    <NotAuthorized>
+        <p>ACCESS DENIED: You are not logged in.</p>
+    </NotAuthorized>
 </AuthorizeView>
 
 @code {
@@ -40,8 +43,6 @@
         {
             errorLabel = $"Trying to join with invite code: {InviteCode}";
             _isDisabled = true;
-
-            // Átmegyünk a GameRoomra guest módban
             Nav.NavigateTo($"/game-room/{InviteCode}");
         }
         else

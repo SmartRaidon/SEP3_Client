@@ -171,3 +171,17 @@ h1:focus {
     text-align: center;
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
+
+.timer {
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.timer.red {
+    animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
