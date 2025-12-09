@@ -91,4 +91,10 @@ public class SignalRGameService : IGameService
         });
         return Task.CompletedTask;
     }
+    
+    public async Task<GameDto> CheckTimeoutAsync(int gameId)
+    {
+        return await _hubConnection.InvokeAsync<GameDto>("CheckTimeout", gameId);
+    }
+
 }

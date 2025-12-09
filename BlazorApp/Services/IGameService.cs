@@ -18,4 +18,6 @@ public interface IGameService
     Task StopAsync();
     Task RequestReplayAsync(int gameId, int playerId);
     Task OnReplayStarted(Func<GameDto, Task> callback);
+    
+    Task<GameDto> CheckTimeoutAsync(int gameId);
 }

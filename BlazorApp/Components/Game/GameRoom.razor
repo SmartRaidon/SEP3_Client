@@ -283,13 +283,20 @@
         }
         
         // we start the timer
-        if (!GameEnded)
+        // it only starts if the game is in progress
+        if (game.Status == "InProgress")
         {
             if (CurrentTurnPlayerId == CurrentPlayerId)
                 StartTurnTimer();
             else
                 StopTurnTimer();
         }
+        else
+        {
+            
+            StopTurnTimer();
+        }
+
 
         return InvokeAsync(StateHasChanged);
     }
@@ -358,8 +365,14 @@
         StatusMessage = CurrentTurnPlayerId == CurrentPlayerId
             ? "Your turn!"
             : "Waiting for opponent...";
+        
+        StopTurnTimer();
+
+        if (game.Status == "InProgress" && CurrentTurnPlayerId == CurrentPlayerId)
+            StartTurnTimer();
 
         return InvokeAsync(StateHasChanged);
+        
     }
     
     private void StartTurnTimer()
@@ -395,6 +408,20 @@
         {
             StopTurnTimer();
             Console.WriteLine("[GameRoom] Timer expired!");
+
+            InvokeAsync(async () =>
+            {
+                try
+                {
+                   
+                    await SignalRService.CheckTimeoutAsync(GameId);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("[GameRoom] Error during CheckTimeout: " + ex);
+                }
+            });
         }
     }
+
 }
