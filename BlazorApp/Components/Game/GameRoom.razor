@@ -16,9 +16,6 @@
         {
             <div class="text-center mt-5">
                 <h3>@_connectionStatus</h3>
-                <button class="btn btn-primary mt-3" @onclick="Reconnect">
-                    Try Again
-                </button>
             </div>
         }
         else
@@ -326,15 +323,6 @@
         GameEnded = true;
 
         return InvokeAsync(StateHasChanged);
-    }
-    
-    private async Task Reconnect()
-    {
-        if (!_connectedToServer)
-        {
-            _connectionStatus = "Reconnecting...";
-            await SignalRService.StartAsync();
-        }
     }
     
     private async Task RequestReplay()

@@ -16,12 +16,23 @@ public class SignalRGameService : IGameService
     }
 
 
-    public Task StartAsync()
+    public async Task StartAsync()
     {
-        Console.WriteLine("[Client] Starting SignalR connection...");
-        return _hubConnection.StartAsync();
-    }
+        if (_hubConnection == null)
+            throw new InvalidOperationException("HubConnection is not initialized.");
 
+        if (_hubConnection.State == HubConnectionState.Disconnected)
+        {
+            Console.WriteLine("[Client] Starting SignalR connection...");
+            await _hubConnection.StartAsync();
+            Console.WriteLine("[Client] SignalR connected. State=" + _hubConnection.State);
+        }
+        else
+        {
+            Console.WriteLine("[Client] StartAsync called but connection is in state: " + _hubConnection.State);
+
+        }
+    }
     public Task<GameDto> CreateGameAsync(int playerId, string playerName)
     {
         Console.WriteLine($"[Client] CreateGameAsync({playerId},  {playerName})");
