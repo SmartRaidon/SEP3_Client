@@ -150,12 +150,14 @@
         if (_newPassword != _repeatPassword)
         {
             _passwordError = "Passwords do not match.";
+            await InvokeAsync(StateHasChanged);
             return;
         }
         
         if (_newPassword.Length < 8)
         {
             _passwordError = "Password must be at least 8 characters.";
+            await InvokeAsync(StateHasChanged);
             return;
         }
         
@@ -175,6 +177,7 @@
         if (_newUsername.Length < 5)
         {
             _passwordError = "Username must be at least 5 characters.";
+            await InvokeAsync(StateHasChanged);
             return;
         }
         

@@ -84,7 +84,7 @@ public class HttpUserService : IUserService
         };
 
         HttpResponseMessage httpResponse = 
-            await _httpClient.PutAsJsonAsync($"/api/users/{id}/password", dto);
+            await _httpClient.PatchAsJsonAsync($"/api/users/{id}/password", dto);
 
         string response = await httpResponse.Content.ReadAsStringAsync();
 
@@ -100,10 +100,10 @@ public class HttpUserService : IUserService
         };
 
         HttpResponseMessage httpResponse = 
-            await _httpClient.PutAsJsonAsync($"/api/users/{id}/username", dto);
+            await _httpClient.PatchAsJsonAsync($"/api/users/{id}/username", dto);
 
         string response = await httpResponse.Content.ReadAsStringAsync();
-
+        Console.WriteLine("LS response on changeusername: " + response);
         if (!httpResponse.IsSuccessStatusCode)
             throw new Exception(response);
     }
