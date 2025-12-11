@@ -166,7 +166,7 @@
         _newPassword = "";
         _repeatPassword = "";
         CancelEditing();
-        await ((SimpleAuthProvider)AuthProvider).Logout();
+        await ((SimpleAuthProvider)AuthProvider).LogoutAsync();
         Navigation.NavigateTo("/login");
     }
     
@@ -185,7 +185,7 @@
         
         _newUsername = "";
         CancelEditing();
-        await ((SimpleAuthProvider)AuthProvider).Logout();
+        await ((SimpleAuthProvider)AuthProvider).LogoutAsync();
         Navigation.NavigateTo("/login");
     }
 }

@@ -49,7 +49,7 @@
         errorLabel = "";
         try
         {
-            await ((SimpleAuthProvider)AuthProvider).Login(email, password);
+            await ((SimpleAuthProvider)AuthProvider).LoginAsync(email, password);
             NavMgr.NavigateTo("/");
         }
         catch (Exception e)

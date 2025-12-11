@@ -133,7 +133,7 @@
             _successLabel = "Successful registration! Redirecting to Login page...";
             await Task.Delay(3000);
 
-            await ((SimpleAuthProvider)AuthProvider).Register(_email1, _username, _password1);
+            await ((SimpleAuthProvider)AuthProvider).RegisterAsync(_email1, _username, _password1);
 
             NavMgr.NavigateTo("/login");
         }

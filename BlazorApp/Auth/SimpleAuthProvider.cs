@@ -19,7 +19,7 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         _jsRuntime = jsRuntime;
     }
     
-    public async Task Login(string email, string password)
+    public async Task LoginAsync(string email, string password)
     {
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/api/users/login",
             new LoginDto() { Email = email, Password = password });
@@ -50,13 +50,13 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(principal)));
     }
 
-    public async Task Logout()
+    public async Task LogoutAsync()
     {
         await _jsRuntime.InvokeVoidAsync("sessionStorage.setItem", "currentUser", ""); 
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new()))); 
     }
 
-    public async Task Register(string email, string username, string password)
+    public async Task RegisterAsync(string email, string username, string password)
     {
         // CHANGE THE URI ACCORDING TO THE LOGIC SERVER'S USERSCONTROLLER!
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync("api/users/register",

@@ -60,7 +60,7 @@
 @code {
     private async Task Logout()
     {
-        await ((SimpleAuthProvider)AuthProvider).Logout();      // Clear session and notify Blazor
+        await ((SimpleAuthProvider)AuthProvider).LogoutAsync();      // Clear session and notify Blazor
         Navigation.NavigateTo("/");       // Redirect to home or login page
     }
 }
