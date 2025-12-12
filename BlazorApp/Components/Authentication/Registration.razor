@@ -67,9 +67,9 @@
     private string _email2 = String.Empty;
     private string _errorLabel = String.Empty;
     private string _successLabel = String.Empty;
-    private bool _isDisabled = false;
+    private bool _isDisabled;
     
-    bool IsValidEmail(string email)
+    private bool IsValidEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
             return false;
@@ -78,12 +78,12 @@
             .IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
     }
     
-    bool IsValidPassword(string password)
+    private bool IsValidPassword(string password)
     {
         return password.Length >= 8;
     }
 
-    bool IsValidUsername(string username)
+    private bool IsValidUsername(string username)
     {
         return username.Length >= 5;
     }
@@ -132,15 +132,13 @@
             _isDisabled = true;
             _successLabel = "Successful registration! Redirecting to Login page...";
             await Task.Delay(3000);
-
             await ((SimpleAuthProvider)AuthProvider).RegisterAsync(_email1, _username, _password1);
-
             NavMgr.NavigateTo("/login");
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            _errorLabel = $"Error: {e.Message}";
+            _errorLabel = $"Could not register! Error: {e.Message}";
             _isDisabled = false;
         }
     }

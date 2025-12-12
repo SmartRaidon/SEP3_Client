@@ -44,7 +44,7 @@
 </AuthorizeView>
 
 @code {
-    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    [CascadingParameter] public Task<AuthenticationState>? State { get; set; }
     
     private List<UserDto>? _list;
 

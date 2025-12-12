@@ -1,6 +1,4 @@
 ﻿@page "/"
-@using BlazorApp.Auth
-@inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager NavMgr
 
 <PageTitle>Welcome</PageTitle>
@@ -41,12 +39,12 @@
 
 @code {
 
-    void GoToCreateMatch()
+    private void GoToCreateMatch()
     {
         NavMgr.NavigateTo("/game-room");
     }
 
-    void GoToJoinMatch()
+    private void GoToJoinMatch()
     {
         NavMgr.NavigateTo("/join-match");
     }

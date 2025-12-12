@@ -23,8 +23,8 @@
             <div class="d-flex justify-content-center align-items-center">
                 <div class="text-center">
                     <h1>Player X</h1>
-                    <label>@playerXName</label>
-                    <label>@PlayerXId</label>
+                    <label>@_playerXName</label>
+                    <label>@_playerXId</label>
                 </div>
                 <div class="tictactoebox">
                     <div class="board" role="grid" aria-label="Tic Tac Toe board">
@@ -32,17 +32,17 @@
                         {
                             var index = i;   // <<< EZ A SOR A LÉNYEG
 
-                            <button class="cell @(WinningCells?.Contains(index) == true ? "winning-cell" : "")"
+                            <button class="cell @(_winningCells?.Contains(index) == true ? "winning-cell" : "")"
                                     role="gridcell"
                                     aria-label="Cell @index"
-                                    @onclick="@(async () => await OnCellClick(index))"
-                                    disabled="@(CellsDisabled[index])">
-                                <span class="mark">@Marks[index]</span>
+                                    @onclick="@(async () => await OnCellClickAsync(index))"
+                                    disabled="@(_cellsDisabled[index])">
+                                <span class="mark">@_marks[index]</span>
                             </button>
                         }
                     </div>
                     <div class="controls">
-                        <div class="status">@StatusMessage</div>
+                        <div class="status">@_statusMessage</div>
                         <div class="timer" style="color:@TimerColor;">
                             Time left: @TimerDisplay
                         </div>
@@ -50,18 +50,18 @@
                 </div>
                 <div class="text-center">
                     <h1>Player O</h1>
-                    <label>@playerOName</label>
-                    <label>@PlayerOId</label>
+                    <label>@_playerOName</label>
+                    <label>@_playerOId</label>
                 </div>
             </div>
 
-            if (GameEnded)
+            if (_gameEnded)
             {
                 <div class="overlay">
                     <div class="end-card">
-                        <h2>@EndMessage</h2>
+                        <h2>@_endMessage</h2>
 
-                        <button class="btn btn-primary m-2" @onclick="RequestReplay">
+                        <button class="btn btn-primary m-2" @onclick="RequestReplayAsync">
                             Replay
                         </button>
 
@@ -81,26 +81,26 @@
 @code {
     
     [Parameter] public string? InviteCode { get; set; }
-    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
-    private string? userIdAsString;
-    private string username;
-    private bool _connectedToServer = false;
+    [CascadingParameter] public Task<AuthenticationState>? State { get; set; }
+    private string? _userIdAsString;
+    private string? _username;
+    private bool _connectedToServer;
     private string _connectionStatus = "Connecting to logic server...";
 
-    private string[] Marks = Array.Empty<string>();
-    private bool[] CellsDisabled = Array.Empty<bool>();
-    private string StatusMessage = "Waiting for opponent...";
-    private string EndMessage = "";
+    private string[] _marks = Array.Empty<string>();
+    private bool[] _cellsDisabled = Array.Empty<bool>();
+    private string _statusMessage = "Waiting for opponent...";
+    private string _endMessage = "";
 
-    private int GameId;
-    private int CurrentPlayerId = -1;   //
-    private int PlayerXId;
-    private string playerXName;
-    private int? PlayerOId;
-    private string playerOName;
-    private int CurrentTurnPlayerId;
-    private int[]? WinningCells;
-    private bool GameEnded = false;
+    private int _gameId;
+    private int _currentPlayerId;
+    private int _playerXId;
+    private string? _playerXName;
+    private int? _playerOId;
+    private string? _playerOName;
+    private int _currentTurnPlayerId;
+    private int[]? _winningCells;
+    private bool _gameEnded;
     
     private System.Timers.Timer? _moveTimer;
     private int _secondsLeft = 59; // 59 seconds countdown
@@ -122,14 +122,14 @@
             return;
         }
 
-        username = principal.Identity.Name;
+        _username = principal.Identity.Name;
         IEnumerable<Claim> claims = principal.Claims;
-        userIdAsString = claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
-        CurrentPlayerId = Convert.ToInt32(userIdAsString);
+        _userIdAsString = claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+        _currentPlayerId = Convert.ToInt32(_userIdAsString);
 
         // 9x cells
-        Marks = Enumerable.Repeat(string.Empty, 9).ToArray();
-        CellsDisabled = Enumerable.Repeat(false, 9).ToArray();
+        _marks = Enumerable.Repeat(string.Empty, 9).ToArray();
+        _cellsDisabled = Enumerable.Repeat(false, 9).ToArray();
 
         try
         {
@@ -150,32 +150,32 @@
             {
                 // GUEST: joins with inv code
                 Console.WriteLine($"[GameRoom] Joining existing game with invite code {InviteCode}...");
-                game = await SignalRService.JoinGameAsync(InviteCode, CurrentPlayerId, username);
+                game = await SignalRService.JoinGameAsync(InviteCode, _currentPlayerId, _username);
             }
             else
             {
                 // HOST: creating new game
                 Console.WriteLine("[GameRoom] Creating new game...");
-                game = await SignalRService.CreateGameAsync(CurrentPlayerId, username);
+                game = await SignalRService.CreateGameAsync(_currentPlayerId, _username);
                 Nav.NavigateTo($"/game-room/{game.InviteCode}", forceLoad: false);
             }
 
-            GameId = game.Id;
-            PlayerXId = game.PlayerXId;
-            PlayerOId = game.PlayerOId;
-            playerXName = game.PlayerXName;
-            playerOName = game.PlayerOName;
+            _gameId = game.Id;
+            _playerXId = game.PlayerXId;
+            _playerOId = game.PlayerOId;
+            _playerXName = game.PlayerXName;
+            _playerOName = game.PlayerOName;
 
             if (game.Status == "WaitingForOpponent")
             {
-                StatusMessage = $"Invite code: {game.InviteCode}";
+                _statusMessage = $"Invite code: {game.InviteCode}";
             }
             else
             {
-                StatusMessage = "Game in progress...";
+                _statusMessage = "Game in progress...";
             }
             
-            Console.WriteLine($"[GameRoom] Game ready. Id={GameId}, Invite={game.InviteCode}");
+            Console.WriteLine($"[GameRoom] Game ready. Id={_gameId}, Invite={game.InviteCode}");
 
             _connectedToServer = true;
             _connectionStatus = "Connected!";
@@ -189,42 +189,42 @@
         }
     }
 
-    private async Task OnCellClick(int index)
+    private async Task OnCellClickAsync(int index)
     {
         Console.WriteLine($"[GameRoom] OnCellClick({index}) called");
 
         if (!_connectedToServer 
             || index < 0 
-            || index >= Marks.Length 
-            || CellsDisabled[index] 
-            || CurrentTurnPlayerId != CurrentPlayerId) // enforce turn
+            || index >= _marks.Length 
+            || _cellsDisabled[index] 
+            || _currentTurnPlayerId != _currentPlayerId) // enforce turn
             return;
         
         // optimistically update UI
-        Marks[index] = CurrentPlayerId == PlayerXId ? "X" : "O";
-        CellsDisabled[index] = true;
-        StatusMessage = CurrentTurnPlayerId == CurrentPlayerId
+        _marks[index] = _currentPlayerId == _playerXId ? "X" : "O";
+        _cellsDisabled[index] = true;
+        _statusMessage = _currentTurnPlayerId == _currentPlayerId
             ? "Your turn!"
             : "Waiting for opponent...";
         await InvokeAsync(StateHasChanged);
 
-        Console.WriteLine($"[GameRoom] Sending move: game={GameId}, player={CurrentPlayerId}, pos={index}");
-        await SignalRService.SendMoveAsync(GameId, CurrentPlayerId, index);
+        Console.WriteLine($"[GameRoom] Sending move: game={_gameId}, player={_currentPlayerId}, pos={index}");
+        await SignalRService.SendMoveAsync(_gameId, _currentPlayerId, index);
     }
 
     private Task UpdateBoard(MoveDto move)
     {
         Console.WriteLine($"[GameRoom] Move received: game={move.GameId}, player={move.PlayerId}, pos={move.Position}");
 
-        string mark = move.PlayerId == PlayerXId ? "X" : "O";
+        string mark = move.PlayerId == _playerXId ? "X" : "O";
 
-        if (move.Position >= 0 && move.Position < Marks.Length)
+        if (move.Position >= 0 && move.Position < _marks.Length)
         {
-            Marks[move.Position] = mark;
-            CellsDisabled[move.Position] = true;
+            _marks[move.Position] = mark;
+            _cellsDisabled[move.Position] = true;
         }
 
-        StatusMessage = CurrentTurnPlayerId == CurrentPlayerId 
+        _statusMessage = _currentTurnPlayerId == _currentPlayerId 
             ? "Your turn!" 
             : "Waiting for opponent...";
         return InvokeAsync(StateHasChanged);
@@ -233,48 +233,48 @@
     private Task OnGameUpdated(GameDto game)
     {
         Console.WriteLine("[GameRoom] GameUpdated received");
-        GameId = game.Id;
-        PlayerXId = game.PlayerXId;
-        PlayerOId = game.PlayerOId;
-        playerOName = game.PlayerOName;
+        _gameId = game.Id;
+        _playerXId = game.PlayerXId;
+        _playerOId = game.PlayerOId;
+        _playerOName = game.PlayerOName;
 
         for (int i = 0; i < game.Board.Length && i < 9; i++)
         {
             int cell = game.Board[i];
-            Marks[i] = cell == 1 ? "X" : cell == 2 ? "O" : string.Empty;
-            CellsDisabled[i] = cell != 0;
+            _marks[i] = cell == 1 ? "X" : cell == 2 ? "O" : string.Empty;
+            _cellsDisabled[i] = cell != 0;
         }
 
         // update winning cells
-        WinningCells = game.WinningCells;
+        _winningCells = game.WinningCells;
 
         // set next turn
-        CurrentTurnPlayerId = game.NextPlayerId;
+        _currentTurnPlayerId = game.NextPlayerId;
 
         if (game.Status == "Finished")
         {
             if (game.WinnerId.HasValue)
             {
                 string winnerMark =
-                    game.WinnerId == PlayerXId ? "X" :
-                        (PlayerOId.HasValue && game.WinnerId == PlayerOId.Value ? "O" : "?");
-                StatusMessage = $"Game over. {winnerMark} wins!";
+                    game.WinnerId == _playerXId ? "X" :
+                        (_playerOId.HasValue && game.WinnerId == _playerOId.Value ? "O" : "?");
+                _statusMessage = $"Game over. {winnerMark} wins!";
             }
             else
             {
-                StatusMessage = "Game over. Draw!";
+                _statusMessage = "Game over. Draw!";
             }
 
             // disable all cells
-            for (int i = 0; i < CellsDisabled.Length; i++)
-                CellsDisabled[i] = true;
+            for (int i = 0; i < _cellsDisabled.Length; i++)
+                _cellsDisabled[i] = true;
 
-            EndMessage = StatusMessage;
-            GameEnded = true;
+            _endMessage = _statusMessage;
+            _gameEnded = true;
         }
         else
         {
-            StatusMessage = CurrentTurnPlayerId == CurrentPlayerId
+            _statusMessage = _currentTurnPlayerId == _currentPlayerId
                 ? "Your turn!"
                 : "Waiting for opponent...";
         }
@@ -283,7 +283,7 @@
         // it only starts if the game is in progress
         if (game.Status == "InProgress")
         {
-            if (CurrentTurnPlayerId == CurrentPlayerId)
+            if (_currentTurnPlayerId == _currentPlayerId)
                 StartTurnTimer();
             else
                 StopTurnTimer();
@@ -304,35 +304,35 @@
         if (game.WinnerId.HasValue)
         {
             string winnerMark =
-                game.WinnerId == PlayerXId ? "X" :
-                    (PlayerOId.HasValue && game.WinnerId == PlayerOId.Value ? "O" : "?");
-            StatusMessage = $"Game over. {winnerMark} wins!";
+                game.WinnerId == _playerXId ? "X" :
+                    (_playerOId.HasValue && game.WinnerId == _playerOId.Value ? "O" : "?");
+            _statusMessage = $"Game over. {winnerMark} wins!";
         }
         else
         {
-            StatusMessage = "Game over. Draw!";
+            _statusMessage = "Game over. Draw!";
         }
         
-        WinningCells = game.WinningCells;
+        _winningCells = game.WinningCells;
         
         // disable all cells
-        for (int i = 0; i < CellsDisabled.Length; i++)
-            CellsDisabled[i] = true;
+        for (int i = 0; i < _cellsDisabled.Length; i++)
+            _cellsDisabled[i] = true;
         
-        EndMessage = StatusMessage;
-        GameEnded = true;
+        _endMessage = _statusMessage;
+        _gameEnded = true;
 
         return InvokeAsync(StateHasChanged);
     }
     
-    private async Task RequestReplay()
+    private async Task RequestReplayAsync()
     {
         Console.WriteLine("[GameRoom] Replay requested");
 
-        StatusMessage = "Replay requested. Waiting for opponent...";
-        EndMessage = StatusMessage;
-        GameEnded = false; // hide overlay while waiting - maybe maybe
-        await SignalRService.RequestReplayAsync(GameId, CurrentPlayerId);
+        _statusMessage = "Replay requested. Waiting for opponent...";
+        _endMessage = _statusMessage;
+        _gameEnded = false; // hide overlay while waiting - maybe maybe
+        await SignalRService.RequestReplayAsync(_gameId, _currentPlayerId);
         await InvokeAsync(StateHasChanged);
     }
     
@@ -342,21 +342,21 @@
 
         for (int i = 0; i < 9; i++)
         {
-            Marks[i] = string.Empty;
-            CellsDisabled[i] = false;
+            _marks[i] = string.Empty;
+            _cellsDisabled[i] = false;
         }
 
-        WinningCells = null;
-        GameEnded = false;
+        _winningCells = null;
+        _gameEnded = false;
 
-        CurrentTurnPlayerId = game.NextPlayerId;
-        StatusMessage = CurrentTurnPlayerId == CurrentPlayerId
+        _currentTurnPlayerId = game.NextPlayerId;
+        _statusMessage = _currentTurnPlayerId == _currentPlayerId
             ? "Your turn!"
             : "Waiting for opponent...";
         
         StopTurnTimer();
 
-        if (game.Status == "InProgress" && CurrentTurnPlayerId == CurrentPlayerId)
+        if (game.Status == "InProgress" && _currentTurnPlayerId == _currentPlayerId)
             StartTurnTimer();
 
         return InvokeAsync(StateHasChanged);
@@ -402,7 +402,7 @@
                 try
                 {
                    
-                    await SignalRService.CheckTimeoutAsync(GameId);
+                    await SignalRService.CheckTimeoutAsync(_gameId);
                 }
                 catch (Exception ex)
                 {

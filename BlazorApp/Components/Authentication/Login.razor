@@ -15,19 +15,19 @@
             <label>Email:</label>
         </div>
         <div>
-            <input type="email" @bind="email" placeholder="example@gmail.com"/>
+            <input type="email" @bind="_email" placeholder="example@gmail.com"/>
         </div>    
         <div>
             <label>Password:</label>
         </div>
         <div>
-            <input type="password" @bind="password" placeholder="Password"/>
+            <input type="password" @bind="_password" placeholder="Password"/>
         </div>
         <div>
-            @if (!string.IsNullOrEmpty(errorLabel))
+            @if (!string.IsNullOrEmpty(_errorLabel))
             {
                 <label style="color: red">
-                    @errorLabel
+                    @_errorLabel
                 </label>
             }
         </div>
@@ -39,23 +39,29 @@
 
 @code {
     
-    private string email;
-    private string password;
-    private string errorLabel;
+    private string? _email;
+    private string? _password;
+    private string? _errorLabel = "";
 
     private async Task LoginAsync()
     {
-        Console.WriteLine("Login button clicked");
-        errorLabel = "";
-        try
+        if (!string.IsNullOrWhiteSpace(_email) && !string.IsNullOrWhiteSpace(_password))
         {
-            await ((SimpleAuthProvider)AuthProvider).LoginAsync(email, password);
-            NavMgr.NavigateTo("/");
+            try
+            {
+                await ((SimpleAuthProvider)AuthProvider).LoginAsync(_email, _password);
+                NavMgr.NavigateTo("/");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                _errorLabel = $"Could not login! Error: {e.Message}";
+            }    
         }
-        catch (Exception e)
+        else
         {
-            Console.WriteLine(e);
-            errorLabel = $"Error: {e.Message}";
+            _errorLabel = "Please type in your email and password! The fields can't be empty!";
         }
+        
     }
 }
