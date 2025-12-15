@@ -129,10 +129,10 @@
         
         try
         {
+            await ((SimpleAuthProvider)AuthProvider).RegisterAsync(_email1, _username, _password1);
             _isDisabled = true;
             _successLabel = "Successful registration! Redirecting to Login page...";
-            await Task.Delay(3000);
-            await ((SimpleAuthProvider)AuthProvider).RegisterAsync(_email1, _username, _password1);
+            await Task.Delay(2000);
             NavMgr.NavigateTo("/login");
         }
         catch (Exception e)
