@@ -1,5 +1,6 @@
 ﻿@page "/join-match"
 @using System.Security.Claims
+@using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager Nav
 
 
@@ -65,6 +66,16 @@
         _username = principal.Identity.Name;
         IEnumerable<Claim> claims = principal.Claims;
         _userIdAsString = claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
-        Console.WriteLine("[ JOIN MATCH ] Waiting for invite code (PLACEHOLDER)");
+        
+        // handling invalid invite code
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("error", out var error))
+        {
+            if (error == "invalid-invite")
+                _errorLabel = "Invalid or expired invite code!";
+
+            if (error == "join-failed")
+                _errorLabel = "Could not join the game! Please try again!";
+        }
     }
 }

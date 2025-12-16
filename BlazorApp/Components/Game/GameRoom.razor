@@ -149,8 +149,17 @@
             if (!string.IsNullOrWhiteSpace(InviteCode))
             {
                 // GUEST: joins with inv code
-                Console.WriteLine($"[GameRoom] Joining existing game with invite code {InviteCode}...");
-                game = await SignalRService.JoinGameAsync(InviteCode, _currentPlayerId, _username);
+                try
+                {
+                    Console.WriteLine($"[GameRoom] Joining existing game with invite code {InviteCode}...");
+                    game = await SignalRService.JoinGameAsync(InviteCode, _currentPlayerId, _username);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("[GameRoom] Invalid invite code: " + ex.Message);
+                    Nav.NavigateTo("/join-match?error=invalid-invite", forceLoad: true);
+                    return;
+                }
             }
             else
             {
